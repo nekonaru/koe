@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-ai: #2b3a67;
+  --color-ai-light: #3a4f85;
+  --color-coral: #ff7a59;
+  --color-warm: #faf7f2;
+  --color-ink: #141414;
+  --font-sans: 'Nunito', ui-rounded, system-ui, 'Segoe UI', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid #ff7a59;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-ping {
+    animation: none;
+  }
+}

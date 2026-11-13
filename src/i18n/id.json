@@ -1,0 +1,132 @@
+{
+  "app": {
+    "name": "Koe",
+    "tagline": "Audio dan video ke teks, gratis dan privat",
+    "nav": {
+      "transcribe": "Transkripsi",
+      "about": "Tentang",
+      "help": "Bantuan"
+    }
+  },
+  "hero": {
+    "badge": "Diproses di perangkat ini - tidak ada yang diunggah",
+    "title": "Transkripsi apa pun, langsung di browser",
+    "subtitle": "Gratis, tanpa batas, dan privat. Audio kamu tidak pernah meninggalkan perangkat ini. Jalan offline setelah model diunduh sekali."
+  },
+  "step1": {
+    "title": "Pilih file",
+    "drop": "Seret dan lepas file audio atau video ke sini",
+    "browse": "atau klik untuk memilih",
+    "formats": "Audio: wav, mp3, m4a, flac, ogg. Video: mp4, mov, webm.",
+    "selected": "File dipilih",
+    "duration": "Durasi",
+    "size": "Ukuran",
+    "remove": "Hapus file"
+  },
+  "step2": {
+    "title": "Pengaturan",
+    "language": "Bahasa",
+    "autoDetect": "Deteksi otomatis",
+    "model": "Model",
+    "outputFormat": "Format keluaran",
+    "task": "Tugas",
+    "transcribe": "Transkripsi (bahasa asli)",
+    "translate": "Terjemahkan ke Inggris",
+    "modelTiny": "Tiny - paling cepat, akurasi lebih rendah",
+    "modelBase": "Base - seimbang kecepatan dan akurasi (default)",
+    "modelSmall": "Small - paling akurat, ~242 MB, butuh memori lebih",
+    "downloadSize": "Ukuran unduhan",
+    "dataWarning": "Kamu akan mengunduh {size}. Ini memakai kuota data. Model disimpan di perangkat ini dan dipakai offline.",
+    "memoryWarning": "Perangkat ini melaporkan memori terbatas. Pertimbangkan model Tiny atau Base.",
+    "download": "Unduh model",
+    "downloading": "Mengunduh model",
+    "ready": "Model siap"
+  },
+  "step3": {
+    "title": "Hasil",
+    "start": "Mulai transkripsi",
+    "cancel": "Batal",
+    "elapsed": "Waktu berjalan",
+    "segments": "Segmen",
+    "copy": "Salin",
+    "copied": "Tersalin ke clipboard",
+    "download": "Unduh",
+    "downloadZip": "Unduh semua (ZIP)",
+    "empty": "Transkrip akan muncul di sini, segmen demi segmen.",
+    "processing": "Memproses",
+    "windowProgress": "Potongan {current} dari {total}"
+  },
+  "queue": {
+    "title": "Antrean file",
+    "addMore": "Tambah file",
+    "clearDone": "Bersihkan yang selesai",
+    "statusPending": "Menunggu",
+    "statusProcessing": "Memproses",
+    "statusDone": "Selesai",
+    "statusError": "Gagal"
+  },
+  "models": {
+    "title": "Pengelola model",
+    "storageUsed": "Penyimpanan yang dipakai browser",
+    "estimate": "{used} dari {quota} terpakai",
+    "delete": "Hapus",
+    "deleting": "Menghapus",
+    "deleted": "Dihapus dari perangkat ini",
+    "checking": "Memeriksa cache",
+    "cached": "Terunduh",
+    "notCached": "Belum diunduh",
+    "refresh": "Perbarui"
+  },
+  "errors": {
+    "decodeFailed": "File ini tidak bisa didekode. Mungkin rusak atau formatnya tidak didukung browser ini.",
+    "unsupported": "Format ini tidak didukung browser kamu. Coba ubah dulu ke WAV, MP3, atau MP4.",
+    "modelDownload": "Model tidak bisa diunduh. Periksa koneksi kamu lalu coba lagi.",
+    "checksum": "Model yang diunduh gagal diverifikasi dan ditolak.",
+    "storage": "Ruang penyimpanan tidak cukup untuk menyimpan model.",
+    "outOfMemory": "Browser kehabisan memori. Coba model Tiny atau Base, atau file yang lebih pendek.",
+    "worker": "Proses transkripsi berhenti tiba-tiba. Silakan coba lagi.",
+    "unsupportedBrowser": "Browser ini tidak mendukung fitur yang dibutuhkan (WebAssembly). Pakai Chrome, Edge, Firefox, atau Safari terbaru.",
+    "noFile": "Pilih file dulu.",
+    "modelNotReady": "Unduh model dulu.",
+    "unknown": "Terjadi kesalahan. Silakan coba lagi."
+  },
+  "about": {
+    "title": "Tentang Koe",
+    "privacyTitle": "Privasi, secara arsitektur",
+    "privacyBody": "Koe tidak punya backend. Tidak ada server yang bisa menerima audio atau transkrip kamu. Semua pemrosesan terjadi di dalam browser memakai WebAssembly. Satu-satunya permintaan jaringan adalah: memuat situs ini, dan mengunduh model suara yang kamu pilih sendiri. Tanpa telemetri, tanpa analytics, tanpa cookie, tanpa akun.",
+    "offlineTitle": "Offline dulu",
+    "offlineBody": "Setelah model diunduh sekali, Koe jalan offline sepenuhnya. Pasang sebagai PWA untuk pengalaman terbaik.",
+    "unlimitedTitle": "Gratis dan tanpa batas",
+    "unlimitedBody": "Tanpa kuota, tanpa langganan, tanpa biaya per menit. Koe open source di bawah lisensi MIT.",
+    "nameTitle": "Arti nama",
+    "nameBody": "Koe (声) berarti suara dalam bahasa Jepang. Koe adalah saudara yang lebih ringan dari Kikoe, alat baris perintah.",
+    "licensesTitle": "Lisensi",
+    "licensesBody": "Koe berlisensi MIT. Koe dibangun di atas Whisper dari OpenAI (MIT), ONNX Runtime Web (MIT), Transformers.js dari Hugging Face (Apache-2.0), React (MIT), dan Tailwind CSS (MIT). Font: Nunito (SIL Open Font License), di-host sendiri."
+  },
+  "help": {
+    "title": "Bantuan",
+    "browserTitle": "Browser yang didukung",
+    "browserBody": "Chrome, Edge, Firefox, atau Safari versi terbaru di desktop. Android Chrome bisa dipakai dengan peringatan memori. iOS Safari masih eksperimental. Multithreading butuh header cross-origin isolation, yang dikirim situs ini.",
+    "modelTitle": "Memilih model",
+    "modelBody": "Tiny paling cepat dan kecil. Base adalah default yang baik. Small paling akurat tapi mengunduh sekitar 242 MB dan butuh memori lebih. Jika ragu, mulai dari Base.",
+    "memoryTitle": "Memori dan file panjang",
+    "memoryBody": "Audio didekode sepenuhnya di memori, jadi file sangat panjang (lebih dari 30 menit) bisa gagal di perangkat dengan memori kecil. Pakai Tiny, tutup tab lain, atau potong file lebih dulu.",
+    "formatTitle": "Format keluaran",
+    "formatBody": "TXT adalah teks polos. SRT dan VTT adalah subtitle dengan timestamp. JSON berisi timestamp per segmen untuk diproses lebih lanjut.",
+    "privacyTitle": "Apakah audio saya diunggah?",
+    "privacyBody": "Tidak. Tidak ada yang diunggah. Kamu bisa memeriksa sendiri: buka tab network browser kamu dan lihat tidak ada permintaan saat transkripsi berjalan.",
+    "troubleTitle": "Pemecahan masalah",
+    "troubleBody": "Macet atau crash? Muat ulang halaman. Model tetap tersimpan di cache. Jika unduhan terputus, tekan tombol unduh lagi. Jika transkripsi gagal pada file panjang, coba model yang lebih kecil."
+  },
+  "footer": {
+    "openSource": "Open source di bawah MIT",
+    "offlineReady": "Siap offline",
+    "nothingUploads": "Tidak ada yang diunggah"
+  },
+  "common": {
+    "loading": "Memuat",
+    "themeLight": "Ganti ke tema terang",
+    "themeDark": "Ganti ke tema gelap",
+    "language": "Bahasa"
+  }
+}
