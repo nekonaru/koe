@@ -1,0 +1,54 @@
+{
+  "name": "koe",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Free, unlimited transcription of audio and video to text, fully in the browser. Private, offline-capable, no accounts.",
+  "keywords": [
+    "transcription",
+    "whisper",
+    "speech-to-text",
+    "offline",
+    "privacy",
+    "pwa",
+    "webassembly"
+  ],
+  "license": "MIT",
+  "author": "Nicolas Dwi Dharma (nekonaru)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nekonaru/koe.git"
+  },
+  "bugs": "https://github.com/nekonaru/koe/issues",
+  "scripts": {
+    "dev": "npm run copy-ort && vite",
+    "prebuild": "npm run copy-ort",
+    "build": "tsc -b && vite build",
+    "copy-ort": "node scripts/copy-ort.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "lint": "oxlint",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/nunito": "^5.3.0",
+    "@huggingface/transformers": "^4.3.2",
+    "jszip": "^3.10.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.5",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "oxlint": "^1.90.0",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.5",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}
