@@ -2,7 +2,7 @@
   <img src="public/icon.svg" alt="Koe logo" width="120" />
   <h1>Koe: Private Transcription in Your Browser</h1>
   <p><b>Transcribe audio and video to text in your browser, free and unlimited,<br/>
-  with nothing ever uploaded. Fully private and offline-capable after the model is downloaded once.</b></p>
+  with nothing ever uploaded. Fully private and works offline out of the box.</b></p>
 
   <a href="https://github.com/nekonaru/koe/releases"><img src="https://img.shields.io/github/v/release/nekonaru/koe?style=flat-square&color=blue" alt="Release" /></a>
   <a href="https://github.com/nekonaru/koe/actions/workflows/ci.yml"><img src="https://github.com/nekonaru/koe/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
@@ -17,7 +17,7 @@
 **English** | [Bahasa Indonesia](README.id.md)
 
 > [!NOTE]
-> koe never sends your audio anywhere. All processing happens inside your browser, and the only network traffic is downloading the speech model you explicitly choose.
+> koe never sends your audio anywhere. All processing happens inside your browser, and the only network traffic is the optional on-demand download of the Small model.
 
 ---
 
@@ -44,7 +44,7 @@
 
 ## About
 
-**Koe** is a static web app that transcribes audio and video to text entirely in your browser. Choose a file, pick a language and a model, and get a transcript you can copy or download as TXT, SRT, VTT or JSON. It is built for students, content creators, journalists and anyone on a borrowed computer who cannot install software but still needs a private transcript. There is no account and no per-minute fee; the only server involved is the one serving the static files.
+**Koe** is a static web app that transcribes audio and video to text entirely in your browser. Choose a file, pick a language and a model, and get a transcript you can copy or download as TXT, SRT, VTT or JSON. It is built for students, content creators, journalists and anyone on a borrowed computer who cannot install software but still needs a private transcript. There is no account and no per-minute fee; the only server involved is the one serving the static files. Tiny and Base are bundled, so the app works offline from the very first visit.
 
 > _"Your voice, transcribed on your device, never on anyone's server."_
 
@@ -76,12 +76,12 @@
 
 | Feature | Description |
 |---------|-------------|
-| **Tiny model** | Fastest, smallest download, lower accuracy |
-| **Base model** | Balanced speed and accuracy, the default |
-| **Small model** | Most accurate of the three, about 242 MB, needs more memory |
+| **Tiny model** | Bundled with koe, fastest, lowest accuracy |
+| **Base model** | Bundled with koe, balanced speed and accuracy, the default |
+| **Small model** | Most accurate of the three, about 242 MB, downloaded on demand, needs more memory |
 | **Quantized weights** | Whisper ONNX models quantized for browser use |
 | **Model manager** | See which models are cached, total browser storage used, and delete models you no longer need |
-| **Offline after download** | Models are cached in the browser Cache Storage and reused without a network |
+| **Offline out of the box** | Tiny and Base work immediately, even offline, after the first page load |
 
 ### Interface
 
@@ -210,13 +210,12 @@ The dev server prints the local URL (usually `http://localhost:5173`). Edits to 
 
 1. Drop an audio or video file onto the drop zone, or click it to browse
 2. Wait for the transcript queue to show the file as ready (duration appears)
-3. Choose a language (default **Indonesian**) and a model (default **Base**)
-4. On first use, click **Download model** and wait for it to finish
-5. Click **Start transcription** and watch the segments stream in
-6. When it is done, click **Copy** or **Download** (TXT, SRT, VTT, JSON)
+3. Choose a language (default **Indonesian**) and a model (default **Base**, bundled with koe)
+4. Click **Start transcription** and watch the segments stream in
+5. When it is done, click **Copy** or **Download** (TXT, SRT, VTT, JSON)
 
 > [!NOTE]
-> The first model download needs a network connection. After that, everything runs offline.
+> Tiny and Base are bundled with koe and work immediately, even offline. Small, the largest, downloads from Hugging Face on first use and is then cached too.
 
 ### Everyday use
 
@@ -240,14 +239,14 @@ The app UI (menus, buttons, messages, and settings) is available in **English** 
 
 ## Data Sources
 
-koe needs the network only to download the speech model you ask for:
+koe needs the network only when you choose the Small model:
 
 | Purpose | Source |
 |---------|--------|
-| Speech model weights (Whisper ONNX) | Hugging Face (`onnx-community/whisper-tiny`, `whisper-base`, `whisper-small`) |
+| Speech model weights (Whisper ONNX) | Bundled with koe for Tiny and Base; Hugging Face (`onnx-community/whisper-small`) for Small, downloaded on demand |
 
 > [!NOTE]
-> Model files are downloaded once into your browser cache and then used offline. Nothing else is fetched, ever.
+> Tiny and Base load from your device and never touch the network. Small is downloaded once into your browser cache and then used offline.
 
 ---
 
@@ -266,6 +265,7 @@ koe/
 │   ├── components/            # Dropzone, ModelManager, Logo
 │   └── pages/                 # Transcribe, About, Help
 ├── public/                    # icons, manifest, service worker, _headers
+│   └── models/                # bundled Whisper Tiny and Base (ONNX, quantized)
 ├── scripts/                   # copy-ort.mjs, generate-icons.mjs
 ├── tests/                     # Vitest unit tests
 ├── docs/                      # PRD, benchmark, third-party licenses
@@ -321,7 +321,7 @@ Lints are enforced through `.oxlintrc.json` (react, typescript and oxc plugins).
 
 ## Security
 
-koe has no backend, which removes the whole server attack surface. A strict Content-Security-Policy, COOP and COEP headers ship in `public/_headers`, so the worker and WebAssembly run under cross-origin isolation. The only outbound connections are to the static site itself and, when you choose, to huggingface.co for the model download.
+koe has no backend, which removes the whole server attack surface. A strict Content-Security-Policy, COOP and COEP headers ship in `public/_headers`, so the worker and WebAssembly run under cross-origin isolation. The only outbound connections are to the static site itself (Tiny and Base are bundled) and, if you choose Small, to huggingface.co for the model download.
 
 > [!NOTE]
 > To report a vulnerability privately, use the route in [`SECURITY.md`](SECURITY.md).
@@ -355,14 +355,14 @@ Tiny for speed and short files, Base for most use (the default), Small for the b
 <details>
 <summary><b>Does it work offline?</b></summary>
 
-Yes. After the model is downloaded once (about 41 MB for Tiny, 74 MB for Base, 231 MB for Small), koe transcribes without a network connection and can be installed as a PWA.
+Yes. Tiny and Base are bundled with koe and work offline from the very first page, no download needed. Small downloads once from Hugging Face (about 231 MB) and is then cached for offline use too. koe can be installed as a PWA.
 
 </details>
 
 <details>
-<summary><b>The model download failed or was interrupted. What now?</b></summary>
+<summary><b>The Small model download failed or was interrupted. What now?</b></summary>
 
-Click **Download model** again. The download resumes from the browser cache, and nothing is re-downloaded unnecessarily.
+Click **Download model** again. The download resumes from the browser cache, and nothing is re-downloaded unnecessarily. Tiny and Base are bundled and never need a download.
 
 </details>
 
@@ -376,7 +376,7 @@ Audio is decoded fully in memory, so very long files need a lot of RAM. Use the 
 <details>
 <summary><b>Why is transcription slow?</b></summary>
 
-Multi-threaded WebAssembly needs cross-origin isolation headers, which this site sends. If you host koe on a platform that cannot set headers (like GitHub Pages), transcription still works on a single thread, just slower. Use Cloudflare Pages or any static host that lets you set COOP/COEP.
+Multi-threaded WebAssembly needs cross-origin isolation headers, which this site sends. If you host koe on a platform that cannot set headers (like GitHub Pages), transcription still works on a single thread, just slower. Note the bundled Tiny and Base model files are larger than 25 MB each, so Cloudflare Pages cannot host them as site assets; deploy to GitHub Pages (100 MB file limit, single-threaded WASM) or to another static host without a small per-file limit and with COOP/COEP support.
 
 </details>
 
@@ -397,7 +397,7 @@ Multi-threaded WebAssembly needs cross-origin isolation headers, which this site
 
 ## Disclaimer
 
-Whisper can produce inaccurate or fabricated text, especially on silence. Review transcripts before using them for legal, medical, or other critical purposes. Model weights are downloaded from Hugging Face repositories; their availability is not guaranteed.
+Whisper can produce inaccurate or fabricated text, especially on silence. Review transcripts before using them for legal, medical, or other critical purposes. Tiny and Base are bundled from the `onnx-community` Hugging Face repositories; Small is downloaded from the same source if you choose it. Model availability is not guaranteed.
 
 ---
 

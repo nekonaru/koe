@@ -581,15 +581,15 @@ export function TranscribePage() {
             </select>
           </label>
 
-          {/* Model download */}
+          {/* Model download / bundled notice */}
           <div className="sm:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ai/10 bg-ai/5 p-4 dark:border-warm/10 dark:bg-warm/5">
               <div>
                 <p className="text-sm font-extrabold text-ai dark:text-warm">
-                  {t('step2.downloadSize')}: {formatBytes(modelInfo.approxBytes)}
+                  {modelInfo.bundled ? t('step2.included') : `${t('step2.downloadSize')}: ${formatBytes(modelInfo.approxBytes)}`}
                 </p>
                 <p className="mt-0.5 max-w-md text-xs text-neutral-500 dark:text-neutral-400">
-                  {t('step2.dataWarning', { size: formatBytes(modelInfo.approxBytes) })}
+                  {modelInfo.bundled ? t('step2.includedNote') : t('step2.dataWarning', { size: formatBytes(modelInfo.approxBytes) })}
                 </p>
                 {lowMemory && (
                   <p className="mt-1 text-xs font-bold text-amber-600 dark:text-amber-400">{t('step2.memoryWarning')}</p>
@@ -599,6 +599,14 @@ export function TranscribePage() {
                 <span className="rounded-xl bg-emerald-500/15 px-4 py-2.5 text-xs font-extrabold text-emerald-600 dark:text-emerald-400">
                   {t('step2.ready')}
                 </span>
+              ) : modelInfo.bundled ? (
+                <button
+                  type="button"
+                  onClick={() => initModel(model)}
+                  className="rounded-xl bg-coral px-4 py-2.5 text-xs font-extrabold text-[#1A1207] transition hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ai/50"
+                >
+                  {t('step2.loadModel')}
+                </button>
               ) : (
                 <button
                   type="button"

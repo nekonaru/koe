@@ -241,7 +241,15 @@ whisper.cpp berlisensi MIT dan bobot model Whisper dirilis OpenAI dengan lisensi
 6. Perlu dukungan iOS Safari di v1 atau cukup setelah v1?
 7. Domain: perlu dicek ketersediaan (misalnya koe.app, koe.id, atau varian lain)?
 
-## Bagian 18: Catatan Implementasi v1.0 (deviasi dari draf)
+## Bagian 18: Catatan Implementasi v1.1.0
+
+Dieksekusi pada 2026-11-14.
+
+- **Bundling model.** Whisper Tiny dan Base (varian terkuantisasi `onnx-community`) dikemas ke dalam situs di `public/models/onnx-community/`. Total sekitar 120 MB. Keduanya dimuat dari origin sendiri lewat `env.allowLocalModels = true` dan `env.localModelPath = '/models/'` di worker. Small tetap diunduh on-demand dari Hugging Face.
+- **Batas file hosting.** File model tertanam melebihi 25 MB (decoder Base 53,7 MB), jadi Cloudflare Pages tidak bisa menyajikan keduanya sebagai aset situs. Rekomendasi deployment: GitHub Pages (batas 100 MB per file, tanpa header COOP/COEP, WASM single-thread) atau host statis lain tanpa batas file kecil dan dengan COOP/COEP.
+- **Keputusan hosting terdokumentasi** di README.
+
+## Bagian 19: Catatan Implementasi v1.0.0 (deviasi dari draf)
 
 Dieksekusi pada 2026-11-14. Deviasi dari draf di atas, beserta alasannya:
 

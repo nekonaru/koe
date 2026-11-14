@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.1.0
+
+Free, unlimited, private transcription of audio and video to text in your browser, now with Tiny and Base bundled so it works offline from the very first page.
+
+### New features
+
+- **Bundled models.** Tiny and Base (default) ship inside the site under `public/models`, loaded from your own origin; no download is needed and they work fully offline on first visit.
+
+### Improvements
+
+- **Model manager updated.** Tiny and Base show as included in the app and cannot be deleted; only Small appears as on-demand.
+
 ## v1.0.0
 
 Free, unlimited, private transcription of audio and video to text, entirely in your browser, offline after the first model download.

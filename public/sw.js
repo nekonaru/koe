@@ -3,7 +3,7 @@
 // (via Transformers.js), not by this worker. No requests leave the origin
 // except the ones the page itself makes (site assets and model downloads
 // explicitly initiated by the user).
-const CACHE_NAME = 'koe-shell-v1'
+const CACHE_NAME = 'koe-shell-v2'
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg']
 
 self.addEventListener('install', (event) => {

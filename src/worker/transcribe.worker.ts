@@ -10,9 +10,9 @@
  *    stop cleanly between windows. Windows have no overlap, which is a
  *    deliberate trade-off: overlapping windows need deduplication logic.
  *    Segment timestamps near a window boundary can be slightly off.
- *  - Models are downloaded from Hugging Face on first use and cached by
- *    Transformers.js in the browser Cache Storage API. No model is bundled
- *    with the site. All requests go to huggingface.co and its CDN.
+ *  - Tiny and Base are bundled in the site and loaded from our own origin.
+ *    Small downloads from Hugging Face on demand and is cached by
+ *    Transformers.js in the browser Cache Storage API.
  *  - The ONNX Runtime WASM binaries are served from our own origin
  *    (public/ort, copied from onnxruntime-web by scripts/copy-ort.mjs),
  *    never from a third-party CDN.
@@ -25,8 +25,12 @@ import type { FromWorker, ToWorker } from '../lib/messages'
 import { getModel, type ModelId } from '../lib/models'
 import { KoeError, toKoeError } from '../lib/errors'
 
-// Only allow models from Hugging Face; everything executes locally.
-env.allowLocalModels = false
+// Models bundled with the site (Tiny, Base) load from our own origin.
+// Small still downloads from Hugging Face on demand. Local models are tried
+// first; missing files fall back to the remote repo automatically.
+env.allowLocalModels = true
+env.localModelPath = '/models/'
+env.allowRemoteModels = true
 env.useBrowserCache = true
 // The WASM factory cannot be imported from a blob URL in Chromium, which is
 // what the pre-load path does. ONNX Runtime imports the .mjs directly from
