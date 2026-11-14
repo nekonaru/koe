@@ -127,6 +127,8 @@
 
 ## Instalasi
 
+Versi hosted sudah live di [nekonaru.github.io/koe](https://nekonaru.github.io/koe/). Tiny dan Base dimuat dari situ dan jalan offline setelah kunjungan pertama; GitHub Pages tidak bisa mengatur header COOP/COEP, jadi transkripsi jalan single-thread.
+
 ### Opsi A: Jalankan build produksi secara lokal (paling mudah)
 
 1. Buka halaman [repository](https://github.com/nekonaru/koe), atau clone:
