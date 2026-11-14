@@ -2,6 +2,18 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.1.0
+
+Transkripsi audio dan video ke teks yang gratis, tanpa batas, dan privat di browser kamu, sekarang dengan Tiny dan Base tertanam sehingga jalan offline sejak halaman pertama.
+
+### Fitur baru
+
+- **Model tertanam.** Tiny dan Base (default) disertakan dalam situs di `public/models`, dimuat dari origin sendiri; tidak perlu unduhan dan sepenuhnya offline pada kunjungan pertama.
+
+### Peningkatan
+
+- **Pengelola model diperbarui.** Tiny dan Base ditampilkan sebagai termasuk dalam aplikasi dan tidak bisa dihapus; hanya Small yang tampil sebagai on-demand.
+
 ## v1.0.0
 
 Transkripsi audio dan video ke teks yang gratis, tanpa batas, dan privat, sepenuhnya di browser kamu, offline setelah model pertama diunduh.

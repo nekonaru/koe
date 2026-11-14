@@ -2,7 +2,7 @@
   <img src="public/icon.svg" alt="Logo Koe" width="120" />
   <h1>Koe: Transkripsi Privat di Browser Kamu</h1>
   <p><b>Ubah audio dan video menjadi teks di browser kamu, gratis dan tanpa batas,<br/>
-  tanpa ada yang pernah diunggah. Privat sepenuhnya dan bisa jalan offline setelah model diunduh sekali.</b></p>
+  tanpa ada yang pernah diunggah. Privat sepenuhnya dan jalan offline dari awal.</b></p>
 
   <a href="https://github.com/nekonaru/koe/releases"><img src="https://img.shields.io/github/v/release/nekonaru/koe?style=flat-square&color=blue" alt="Release" /></a>
   <a href="https://github.com/nekonaru/koe/actions/workflows/ci.yml"><img src="https://github.com/nekonaru/koe/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
@@ -17,7 +17,7 @@
 [English](README.md) | **Bahasa Indonesia**
 
 > [!NOTE]
-> koe tidak pernah mengirim audio kamu ke mana pun. Semua pemrosesan terjadi di dalam browser kamu, dan satu-satunya lalu lintas jaringan adalah mengunduh model suara yang kamu pilih sendiri.
+> koe tidak pernah mengirim audio kamu ke mana pun. Semua pemrosesan terjadi di dalam browser kamu, dan satu-satunya lalu lintas jaringan adalah unduhan opsional model Small.
 
 ---
 
@@ -44,7 +44,7 @@
 
 ## Tentang
 
-**Koe** adalah aplikasi web statis yang mentranskripsi audio dan video menjadi teks sepenuhnya di browser kamu. Pilih file, pilih bahasa dan model, lalu dapatkan transkrip yang bisa disalin atau diunduh sebagai TXT, SRT, VTT, atau JSON. koe dibuat untuk mahasiswa, kreator konten, jurnalis, dan siapa pun di komputer pinjaman yang tidak bisa memasang aplikasi tetapi tetap butuh transkrip yang privat. Tidak ada akun dan tidak ada biaya per menit; satu-satunya server yang terlibat adalah server yang menyajikan file statis.
+**Koe** adalah aplikasi web statis yang mentranskripsi audio dan video menjadi teks sepenuhnya di browser kamu. Pilih file, pilih bahasa dan model, lalu dapatkan transkrip yang bisa disalin atau diunduh sebagai TXT, SRT, VTT, atau JSON. koe dibuat untuk mahasiswa, kreator konten, jurnalis, dan siapa pun di komputer pinjaman yang tidak bisa memasang aplikasi tetapi tetap butuh transkrip yang privat. Tidak ada akun dan tidak ada biaya per menit; satu-satunya server yang terlibat adalah server yang menyajikan file statis. Tiny dan Base sudah tertanam, jadi aplikasi jalan offline sejak kunjungan pertama.
 
 > _"Suara kamu, ditranskrip di perangkat kamu, bukan di server orang lain."_
 
@@ -76,12 +76,12 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| **Model Tiny** | Paling cepat, unduhan terkecil, akurasi lebih rendah |
-| **Model Base** | Seimbang antara kecepatan dan akurasi, default |
-| **Model Small** | Paling akurat dari ketiganya, sekitar 242 MB, butuh memori lebih |
+| **Model Tiny** | Tertanam di koe, paling cepat, akurasi lebih rendah |
+| **Model Base** | Tertanam di koe, seimbang antara kecepatan dan akurasi, default |
+| **Model Small** | Paling akurat dari ketiganya, sekitar 242 MB, diunduh saat dibutuhkan, butuh memori lebih |
 | **Bobot terkuantisasi** | Model Whisper ONNX yang terkuantisasi untuk penggunaan browser |
 | **Pengelola model** | Lihat model mana yang tersimpan, total penyimpanan browser yang terpakai, dan hapus model yang tidak dibutuhkan |
-| **Offline setelah unduh** | Model disimpan di Cache Storage browser dan dipakai ulang tanpa jaringan |
+| **Offline dari awal** | Tiny dan Base langsung jalan, bahkan offline, sejak halaman pertama |
 
 ### Antarmuka
 
@@ -211,12 +211,11 @@ Dev server mencetak URL lokalnya (biasanya `http://localhost:5173`). Perubahan d
 1. Lepas file audio atau video ke drop zone, atau klik untuk memilih
 2. Tunggu sampai antrean menampilkan file siap (durasi muncul)
 3. Pilih bahasa (default **Indonesia**) dan model (default **Base**)
-4. Pada pemakaian pertama, klik **Unduh model** dan tunggu sampai selesai
-5. Klik **Mulai transkripsi** dan lihat segmen muncul bertahap
-6. Setelah selesai, klik **Salin** atau **Unduh** (TXT, SRT, VTT, JSON)
+4. Klik **Mulai transkripsi** dan lihat segmen muncul bertahap
+5. Setelah selesai, klik **Salin** atau **Unduh** (TXT, SRT, VTT, JSON)
 
 > [!NOTE]
-> Unduhan model pertama butuh koneksi internet. Setelah itu semuanya jalan offline.
+> Tiny dan Base tertanam di koe dan langsung jalan, bahkan offline. Small, yang terbesar, diunduh dari Hugging Face pada pemakaian pertama lalu tersimpan di cache.
 
 ### Penggunaan sehari-hari
 
@@ -240,14 +239,14 @@ Antarmuka aplikasi (menu, tombol, pesan, dan pengaturan) tersedia dalam **Inggri
 
 ## Sumber Data
 
-koe hanya butuh jaringan untuk mengunduh model suara yang kamu minta:
+koe hanya butuh jaringan saat kamu memilih model Small:
 
 | Tujuan | Sumber |
 |--------|--------|
-| Bobot model suara (Whisper ONNX) | Hugging Face (`onnx-community/whisper-tiny`, `whisper-base`, `whisper-small`) |
+| Bobot model suara (Whisper ONNX) | Tertanam di koe untuk Tiny dan Base; Hugging Face (`onnx-community/whisper-small`) untuk Small, diunduh saat dibutuhkan |
 
 > [!NOTE]
-> File model diunduh sekali ke cache browser kamu lalu dipakai offline. Tidak ada yang lain yang diambil, pernah.
+> Tiny dan Base dimuat dari perangkat kamu dan tidak pernah menyentuh jaringan. Small diunduh sekali ke cache browser kamu lalu dipakai offline.
 
 ---
 
@@ -265,7 +264,7 @@ koe/
 │   ├── i18n/                  # kamus en.json dan id.json
 │   ├── components/            # Dropzone, ModelManager, Logo
 │   └── pages/                 # Transcribe, About, Help
-├── public/                    # ikon, manifest, service worker, _headers
+├── public/                    # ikon, manifest, service worker, _headers (termasuk models/)
 ├── scripts/                   # copy-ort.mjs, generate-icons.mjs
 ├── tests/                     # unit test Vitest
 ├── docs/                      # PRD, benchmark, lisensi pihak ketiga
@@ -321,7 +320,7 @@ Lint ditegakkan lewat `.oxlintrc.json` (plugin react, typescript, dan oxc).
 
 ## Keamanan
 
-koe tidak punya backend, sehingga seluruh permukaan serangan sisi server hilang. Content-Security-Policy yang ketat serta header COOP dan COEP dikirim di `public/_headers`, sehingga worker dan WebAssembly berjalan di bawah cross-origin isolation. Satu-satunya koneksi keluar adalah ke situs statis itu sendiri dan, jika kamu memilih, ke huggingface.co untuk unduhan model.
+koe tidak punya backend, sehingga seluruh permukaan serangan sisi server hilang. Content-Security-Policy yang ketat serta header COOP dan COEP dikirim di `public/_headers`, sehingga worker dan WebAssembly berjalan di bawah cross-origin isolation. Satu-satunya koneksi keluar adalah ke situs statis itu sendiri (Tiny dan Base tertanam) dan, jika kamu memilih Small, ke huggingface.co untuk unduhan model.
 
 > [!NOTE]
 > Untuk melaporkan kerentanan secara privat, gunakan jalur di [`SECURITY.md`](SECURITY.md).
@@ -355,14 +354,14 @@ Tiny untuk kecepatan dan file pendek, Base untuk kebanyakan kasus (default), Sma
 <details>
 <summary><b>Apakah jalan offline?</b></summary>
 
-Ya. Setelah model diunduh sekali (sekitar 41 MB untuk Tiny, 74 MB untuk Base, 231 MB untuk Small), koe mentranskripsi tanpa koneksi internet dan bisa dipasang sebagai PWA.
+Ya. Tiny dan Base tertanam di koe dan jalan offline sejak halaman pertama, tanpa unduhan. Small diunduh sekali dari Hugging Face (sekitar 231 MB) lalu tersimpan untuk dipakai offline. koe bisa dipasang sebagai PWA.
 
 </details>
 
 <details>
-<summary><b>Unduhan model gagal atau terputus. Sekarang bagaimana?</b></summary>
+<summary><b>Unduhan model Small gagal atau terputus. Sekarang bagaimana?</b></summary>
 
-Klik **Unduh model** lagi. Unduhan dilanjutkan dari cache browser, dan tidak ada yang diunduh ulang tanpa perlu.
+Klik **Unduh model** lagi. Unduhan dilanjutkan dari cache browser, dan tidak ada yang diunduh ulang tanpa perlu. Tiny dan Base tertanam dan tidak pernah butuh unduhan.
 
 </details>
 
@@ -397,10 +396,14 @@ WebAssembly multithreading butuh header cross-origin isolation, yang dikirim sit
 
 ## Penafian
 
-Whisper bisa menghasilkan teks yang tidak akurat atau mengarang, terutama pada keheningan. Periksa kembali transkrip sebelum dipakai untuk keperluan hukum, medis, atau keperluan kritis lainnya. Bobot model diunduh dari repository Hugging Face; ketersediaannya tidak dijamin.
+Whisper bisa menghasilkan teks yang tidak akurat atau mengarang, terutama pada keheningan. Periksa kembali transkrip sebelum dipakai untuk keperluan hukum, medis, atau keperluan kritis lainnya. Tiny dan Base tertanam dari repository Hugging Face `onnx-community`; Small diunduh dari sumber yang sama jika kamu memilihnya. Ketersediaan model tidak dijamin.
 
 ---
 
 ## Lisensi
 
 Didistribusikan di bawah **MIT License**. Lihat [`LICENSE`](LICENSE) untuk informasi lebih lanjut.
+
+
+
+
