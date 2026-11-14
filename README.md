@@ -127,6 +127,8 @@
 
 ## Installation
 
+The hosted version is live at [nekonaru.github.io/koe](https://nekonaru.github.io/koe/). Tiny and Base load from that site and work offline after the first visit; GitHub Pages cannot set COOP/COEP headers, so transcription runs single-threaded.
+
 ### Option A: Run the production build locally (easiest)
 
 1. Open the [repository](https://github.com/nekonaru/koe) page, or clone it:
