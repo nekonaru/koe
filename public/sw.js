@@ -6,12 +6,66 @@
 // Resolve the app base from the service worker's own scope so the app works
 // both at / (custom domain or Cloudflare Pages) and /koe/ (GitHub Pages).
 const BASE = new URL(self.registration.scope).pathname
-const CACHE_NAME = 'koe-shell-v2'
+const CACHE_NAME = 'koe-shell-v3'
 const APP_SHELL = [BASE, BASE + 'index.html', BASE + 'manifest.webmanifest', BASE + 'icon.svg']
+
+// On install, precaching the bundled models happens in the background after
+// the app shell is ready. It fails silently if the connection is slow or the
+// quota is tight; the runtime cache fills on first use either way.
+const MODEL_FILES = [
+  'onnx/encoder_model_quantized.onnx',
+  'onnx/decoder_model_merged_quantized.onnx',
+  'config.json',
+  'generation_config.json',
+  'preprocessor_config.json',
+  'tokenizer.json',
+  'tokenizer_config.json',
+  'vocab.json',
+  'merges.txt',
+  'normalizer.json',
+  'special_tokens_map.json',
+  'added_tokens.json',
+]
+const MODELS = ['whisper-tiny', 'whisper-base']
+
+function modelPrecacheUrls() {
+  const urls = []
+  for (const model of MODELS) {
+    for (const file of MODEL_FILES) {
+      urls.push(`${BASE}models/onnx-community/${model}/${file}`)
+    }
+  }
+  return urls
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()),
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting()),
+  )
+  // Precache the models without blocking activation or the page.
+  event.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((cache) =>
+        Promise.allSettled(
+          modelPrecacheUrls().map(async (url) => {
+            try {
+              const cached = await cache.match(url)
+              if (cached) return
+              const response = await fetch(url, { credentials: 'same-origin' })
+              if (response.ok) {
+                await cache.put(url, response)
+              }
+            } catch {
+              // A failed precache is not fatal; runtime caching picks it up later.
+            }
+          }),
+        ),
+      )
+      .catch(() => undefined),
   )
 })
 

@@ -2,6 +2,16 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.4.0
+
+Pemakaian pertama lebih cepat: Tiny jadi default, model tertanam di-precache di latar belakang, dan panduan serta FAQ di dalam aplikasi lebih lengkap.
+
+### Fitur baru
+
+- **Panduan dan FAQ di dalam aplikasi.** Strip "Cara kerja koe" dengan empat langkah dan FAQ di halaman utama mencakup muat pertama, error, offline, pilihan model, privasi, dan file panjang.
+- **Precache model saat kunjungan pertama.** Service worker menyimpan model Tiny dan Base di latar belakang setelah aplikasi dimuat, jadi kunjungan berikutnya dan pemakaian offline langsung.
+- **Tiny jadi model default.** Sekitar setengah ukuran unduhan Base; paling cepat untuk pemakaian sehari-hari.
+
 ## v1.3.0
 
 Model tertanam sekarang dimuat otomatis begitu file dipilih, jadi transkripsi langsung jalan tanpa langkah manual.

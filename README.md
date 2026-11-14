@@ -76,8 +76,8 @@
 
 | Feature | Description |
 |---------|-------------|
-| **Tiny model** | Bundled with koe, fastest, lowest accuracy |
-| **Base model** | Bundled with koe, balanced speed and accuracy, the default |
+| **Tiny model** | Bundled with koe, fastest, the default |
+| **Base model** | Bundled with koe, balanced speed and accuracy |
 | **Small model** | Most accurate of the three, about 242 MB, downloaded on demand, needs more memory |
 | **Quantized weights** | Whisper ONNX models quantized for browser use |
 | **Model manager** | See which models are cached, total browser storage used, and delete models you no longer need |
@@ -212,7 +212,7 @@ The dev server prints the local URL (usually `http://localhost:5173`). Edits to 
 
 1. Drop an audio or video file onto the drop zone, or click it to browse
 2. Wait for the transcript queue to show the file as ready (duration appears)
-3. Choose a language (default **Indonesian**) and a model (default **Base**, bundled with koe)
+3. Choose a language (default **Indonesian**) and a model (default **Tiny**, bundled with koe)
 4. Click **Start transcription** and watch the segments stream in
 5. When it is done, click **Copy** or **Download** (TXT, SRT, VTT, JSON)
 
@@ -350,7 +350,7 @@ No. koe has no backend, and all processing happens inside your browser. You can 
 <details>
 <summary><b>Which model should I choose?</b></summary>
 
-Tiny for speed and short files, Base for most use (the default and pre-loaded automatically), Small for the best accuracy when your device has enough memory.
+Tiny for speed and short files and the default, Base for more accuracy, Small for the best accuracy when your device has enough memory.
 
 </details>
 
@@ -413,4 +413,5 @@ Whisper can produce inaccurate or fabricated text, especially on silence. Review
 ## License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+
 

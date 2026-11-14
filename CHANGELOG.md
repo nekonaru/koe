@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.4.0
+
+Faster first use: Tiny is the default model, bundled models precache in the background, and the in-app guide and FAQ are richer.
+
+### New features
+
+- **In-app guide and FAQ.** A "How koe works" strip with four steps and an in-page FAQ covers first load, errors, offline use, model choice, privacy, and long files.
+- **Model precaching on first visit.** The service worker caches the bundled Tiny and Base models in the background after the app loads, so repeat visits and offline use are instant.
+- **Tiny is the default model.** About half the download of Base; fastest for everyday use.
+
 ## v1.3.0
 
 Bundled models now load automatically once a file is added, so transcription starts without a manual step.

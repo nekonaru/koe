@@ -135,5 +135,51 @@
     "themeLight": "Switch to light theme",
     "themeDark": "Switch to dark theme",
     "language": "Language"
+  },
+  "guide": {
+    "title": "How koe works",
+    "faqTitle": "Frequently asked questions",
+    "step1": {
+      "title": "1. Drop a file",
+      "body": "Audio or video, up to long recordings. Everything is decoded inside your browser."
+    },
+    "step2": {
+      "title": "2. koe works for you",
+      "body": "No account, no upload. The model is bundled in koe; the first visit downloads it once, then it is cached."
+    },
+    "step3": {
+      "title": "3. Transcribe",
+      "body": "Pick a language and press Start. Segments appear as they are recognized."
+    },
+    "step4": {
+      "title": "4. Export",
+      "body": "Copy to the clipboard, or download TXT, SRT, VTT or JSON. Zip available for multiple files."
+    },
+    "faq": {
+      "firstLoad": {
+        "q": "The first load seems slow. What should I expect?",
+        "a": "The first visit downloads the bundled model once (about 43 MB for Tiny, 74 MB for Base). After that it is cached and every visit is instant, even offline. On a slow connection the first open can take a minute; subsequent visits are fast."
+      },
+      "error": {
+        "q": "The model fails to load. What do I do?",
+        "a": "Click Retry next to the error. If it keeps failing, clear this site data (browser DevTools, Application, Storage, Clear site data) and reload the page. If Base still fails, switch to Tiny. Only the Small model needs a connection; Tiny and Base never do."
+      },
+      "offline": {
+        "q": "Does it work offline?",
+        "a": "Yes. Tiny and Base are bundled and work without a network after the first visit. Small downloads once from Hugging Face and then works offline too."
+      },
+      "whichModel": {
+        "q": "Which model should I choose?",
+        "a": "Tiny is fastest and is the default. Base is more accurate with a somewhat bigger file. Small is the most accurate of the three and downloads on first use. When in doubt, keep Tiny; switch to Base only if the transcript is not good enough."
+      },
+      "privacy": {
+        "q": "Is my audio uploaded anywhere?",
+        "a": "No. koe has no backend. Audio is decoded and transcribed inside your browser; nothing leaves your device except the model download itself, which never contains your audio."
+      },
+      "longFile": {
+        "q": "My file is very long or the tab crashes. What can I do?",
+        "a": "Use Tiny, close other tabs, or trim the file first. Audio is decoded fully in memory, so very long files need a lot of RAM. koe warns on devices reporting less than 4 GB of RAM."
+      }
+    }
   }
 }
