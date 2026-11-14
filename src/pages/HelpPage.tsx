@@ -5,6 +5,7 @@ export function HelpPage() {
   const sections: Array<{ titleKey: string; bodyKey: string }> = [
     { titleKey: 'help.browserTitle', bodyKey: 'help.browserBody' },
     { titleKey: 'help.modelTitle', bodyKey: 'help.modelBody' },
+    { titleKey: 'help.recoverFailedTitle', bodyKey: 'help.recoverFailedBody' },
     { titleKey: 'help.memoryTitle', bodyKey: 'help.memoryBody' },
     { titleKey: 'help.formatTitle', bodyKey: 'help.formatBody' },
     { titleKey: 'help.privacyTitle', bodyKey: 'help.privacyBody' },

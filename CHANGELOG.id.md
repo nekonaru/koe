@@ -2,6 +2,16 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.2.0
+
+Rilis ketahanan: kegagalan muat model sekarang bisa dipulihkan dari dalam aplikasi dengan tombol Coba lagi dan langkah-langkah terarah.
+
+### Fitur baru
+
+- **Pemulihan di dalam aplikasi untuk kegagalan muat model.** Error item sekarang menampilkan tombol Coba lagi dan rincian kegagalan; halaman Bantuan punya bagian Model gagal dimuat dengan langkah konkret.
+- **Model tertanam tidak pernah menyentuh jaringan.** Tiny dan Base dimuat ketat dari origin situs; file hilang atau basi gagal seketika dengan pesan jelas, bukan menggantung.
+- **Kebersihan cache model tertanam.** Entri cache remote yang basi untuk model tertanam dibersihkan sekali pada muat pertama agar unduhan terputus sebelumnya tidak menutupi salinan tertanam.
+
 ## v1.1.1
 
 Perbaikan bug untuk antrean bersamaan dan pesan error muat yang lebih jelas.

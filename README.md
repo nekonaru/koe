@@ -367,6 +367,13 @@ Click **Download model** again. The download resumes from the browser cache, and
 </details>
 
 <details>
+<summary><b>The bundled model fails to load. What do I do?</b></summary>
+
+This means the model files in the app could not be read. Click **Retry** next to the error. If it keeps failing, clear this site's data (browser DevTools, Application tab, Storage, Clear site data) and reload the page. If Base still fails, switch to Tiny. As a last resort, check your disk space and try again, since the bundled Tiny and Base models are large files served from the app.
+
+</details>
+
+<details>
 <summary><b>My file is very long or the tab crashes. What can I do?</b></summary>
 
 Audio is decoded fully in memory, so very long files need a lot of RAM. Use the Tiny or Base model, close other tabs, or trim the file first. koe warns on devices reporting less than 4 GB of RAM.

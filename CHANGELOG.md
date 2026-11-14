@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.2.0
+
+Resilience release: model load failures now recover in-app with a Retry button and guided steps.
+
+### New features
+
+- **In-app recovery for model load failures.** The item error now shows a Retry button and the raw failure detail; the Bantuan page has a Model failed to load section with concrete steps to recover.
+- **Bundled models never hit the network.** Tiny and Base load strictly from the site's own origin; missing or stale files fail fast with a clear message instead of hanging.
+- **Cache hygiene for bundled models.** Stale remote cache entries matching bundled models are cleared once on first load so a previously interrupted download cannot shadow the bundled copy.
+
 ## v1.1.1
 
 Bug fixes for concurrent queue runs and clearer load error messaging.
