@@ -6,12 +6,13 @@
 // Resolve the app base from the service worker's own scope so the app works
 // both at / (custom domain or Cloudflare Pages) and /koe/ (GitHub Pages).
 const BASE = new URL(self.registration.scope).pathname
-const CACHE_NAME = 'koe-shell-v3'
+const CACHE_NAME = 'koe-shell-v4'
 const APP_SHELL = [BASE, BASE + 'index.html', BASE + 'manifest.webmanifest', BASE + 'icon.svg']
 
-// On install, precaching the bundled models happens in the background after
-// the app shell is ready. It fails silently if the connection is slow or the
-// quota is tight; the runtime cache fills on first use either way.
+// On install, precaching model files happens in the background after the app
+// shell is ready. Only Tiny is precached, one file at a time, so the browser
+// never has to hold the whole download in memory at once. Failures are
+// tolerated; the runtime cache picks up the rest on first use.
 const MODEL_FILES = [
   'onnx/encoder_model_quantized.onnx',
   'onnx/decoder_model_merged_quantized.onnx',
@@ -26,16 +27,25 @@ const MODEL_FILES = [
   'special_tokens_map.json',
   'added_tokens.json',
 ]
-const MODELS = ['whisper-tiny', 'whisper-base']
+const PRECACHE_MODEL = 'whisper-tiny'
 
 function modelPrecacheUrls() {
-  const urls = []
-  for (const model of MODELS) {
-    for (const file of MODEL_FILES) {
-      urls.push(`${BASE}models/onnx-community/${model}/${file}`)
+  return MODEL_FILES.map((file) => `${BASE}models/onnx-community/${PRECACHE_MODEL}/${file}`)
+}
+
+async function precacheModel(cache) {
+  for (const url of modelPrecacheUrls()) {
+    try {
+      const cached = await cache.match(url)
+      if (cached) continue
+      const response = await fetch(url, { credentials: 'same-origin' })
+      if (response.ok) {
+        await cache.put(url, response)
+      }
+    } catch {
+      // A slow network or quota pressure must not affect the install.
     }
   }
-  return urls
 }
 
 self.addEventListener('install', (event) => {
@@ -45,26 +55,11 @@ self.addEventListener('install', (event) => {
       .then((cache) => cache.addAll(APP_SHELL))
       .then(() => self.skipWaiting()),
   )
-  // Precache the models without blocking activation or the page.
+  // Precache the model serially in the background without blocking install.
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) =>
-        Promise.allSettled(
-          modelPrecacheUrls().map(async (url) => {
-            try {
-              const cached = await cache.match(url)
-              if (cached) return
-              const response = await fetch(url, { credentials: 'same-origin' })
-              if (response.ok) {
-                await cache.put(url, response)
-              }
-            } catch {
-              // A failed precache is not fatal; runtime caching picks it up later.
-            }
-          }),
-        ),
-      )
+      .then((cache) => precacheModel(cache))
       .catch(() => undefined),
   )
 })
