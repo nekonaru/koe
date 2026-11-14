@@ -181,5 +181,17 @@
         "a": "Use Tiny, close other tabs, or trim the file first. Audio is decoded fully in memory, so very long files need a lot of RAM. koe warns on devices reporting less than 4 GB of RAM."
       }
     }
+  },
+  "results": {
+    "stats": "{words} words · {segments} segments",
+    "searchPlaceholder": "Search in transcript",
+    "searchNoMatches": "No matches",
+    "searchMatches": "{count} matches",
+    "editHint": "Click any line to edit it",
+    "listen": "Listen with subtitles",
+    "stop": "Stop",
+    "pause": "Pause",
+    "resume": "Resume",
+    "emptyTranscript": "No speech detected."
   }
 }

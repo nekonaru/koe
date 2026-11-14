@@ -181,5 +181,17 @@
         "a": "Pakai Tiny, tutup tab lain, atau potong file lebih dulu. Audio didekode sepenuhnya di memori, jadi file sangat panjang butuh RAM besar. koe memberi peringatan pada perangkat dengan RAM kurang dari 4 GB."
       }
     }
+  },
+  "results": {
+    "stats": "{words} kata · {segments} segmen",
+    "searchPlaceholder": "Cari di transkrip",
+    "searchNoMatches": "Tidak ada yang cocok",
+    "searchMatches": "{count} kecocokan",
+    "editHint": "Klik baris mana pun untuk mengedit",
+    "listen": "Dengarkan dengan subtitle",
+    "stop": "Berhenti",
+    "pause": "Jeda",
+    "resume": "Lanjut",
+    "emptyTranscript": "Tidak ada ucapan yang terdeteksi."
   }
 }
