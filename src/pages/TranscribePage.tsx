@@ -29,6 +29,7 @@ interface QueueItem {
   totalWindows: number
   segments: TranscriptSegment[]
   errorCode: KoeErrorCode | null
+  detail: string | null
   startedAt: number | null
 }
 
@@ -142,6 +143,7 @@ export function TranscribePage() {
           break
         }
         case 'error': {
+          const rawDetail = typeof message.message === 'string' ? message.message : ''
           const id = activeIdRef.current
           const koeCode = (['decodeFailed', 'unsupported', 'modelDownload', 'checksum', 'storage', 'outOfMemory', 'aborted', 'unsupportedBrowser', 'noFile', 'modelNotReady'] as KoeErrorCode[]).includes(
             message.code as KoeErrorCode,
@@ -151,7 +153,7 @@ export function TranscribePage() {
           if (id) {
             setItems((current) =>
               current.map((item) =>
-                item.id === id ? { ...item, status: 'error', errorCode: koeCode } : item,
+                item.id === id ? { ...item, status: 'error', errorCode: koeCode, detail: rawDetail } : item,
               ),
             )
             activeIdRef.current = null
@@ -164,7 +166,7 @@ export function TranscribePage() {
             if (pending) {
               setItems((current) =>
                 current.map((item) =>
-                  item.id === pending ? { ...item, status: 'error', errorCode: koeCode } : item,
+                  item.id === pending ? { ...item, status: 'error', errorCode: koeCode, detail: rawDetail } : item,
                 ),
               )
             }
@@ -244,7 +246,17 @@ export function TranscribePage() {
       // Only one transcription may be in flight: segments and progress are
       // routed to a single active item. The rest are auto-started via the
       // queue chain.
-      if (item.status !== 'ready' || activeIdRef.current !== null) return
+      if ((item.status !== 'ready' && item.status !== 'error') || activeIdRef.current !== null) return
+      if (item.status === 'error') {
+        // Retry: clear partial output so the UI shows a fresh run.
+        setItems((current) =>
+          current.map((entry) =>
+            entry.id === item.id
+              ? { ...entry, segments: [], percent: 0, window: 0, totalWindows: 0, errorCode: null, detail: null, status: 'ready' }
+              : entry,
+          ),
+        )
+      }
       if (modelReady[model]) {
         launch(item)
         return
@@ -263,6 +275,7 @@ export function TranscribePage() {
         sizeBytes: file.size,
         status: 'decoding',
         durationSec: null,
+        detail: null,
         percent: 0,
         window: 0,
         totalWindows: 0,
@@ -495,7 +508,18 @@ export function TranscribePage() {
                       </button>
                     )}
                     {item.status === 'error' && (
-                      <span className="max-w-xs text-xs font-semibold text-red-500">{errorText(item.errorCode, t)}</span>
+                      <>
+                        <span className="max-w-xs text-xs font-semibold text-red-500" title={item.detail ?? undefined}>
+                          {errorText(item.errorCode, t)}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => startItem(item)}
+                          className="rounded-xl border border-ai/40 bg-ai/10 px-4 py-2 text-xs font-extrabold text-ai hover:bg-ai/20 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20 dark:bg-warm/10 dark:text-warm"
+                        >
+                          {t('queue.retry')}
+                        </button>
+                      </>
                     )}
                     {item.status === 'done' && (
                       <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-extrabold text-emerald-600 dark:text-emerald-400">

@@ -1,136 +1,139 @@
-﻿{
-    "app":  {
-                "name":  "Koe",
-                "tagline":  "Audio and video to text, free and private",
-                "nav":  {
-                            "transcribe":  "Transcribe",
-                            "about":  "About",
-                            "help":  "Help"
-                        }
-            },
-    "hero":  {
-                 "badge":  "Processed on this device - nothing is uploaded",
-                 "title":  "Transcribe anything, right in your browser",
-                 "subtitle":  "Free, unlimited, and private. Your audio never leaves this device. Works offline after the model is downloaded once."
-             },
-    "step1":  {
-                  "title":  "Choose a file",
-                  "drop":  "Drag and drop an audio or video file here",
-                  "browse":  "or click to browse",
-                  "formats":  "Audio: wav, mp3, m4a, flac, ogg. Video: mp4, mov, webm.",
-                  "selected":  "Selected file",
-                  "duration":  "Duration",
-                  "size":  "Size",
-                  "remove":  "Remove file"
-              },
-    "step2":  {
-                  "title":  "Settings",
-                  "language":  "Language",
-                  "autoDetect":  "Auto-detect",
-                  "model":  "Model",
-                  "outputFormat":  "Output format",
-                  "task":  "Task",
-                  "transcribe":  "Transcribe (original language)",
-                  "translate":  "Translate to English",
-                  "modelTiny":  "Tiny - fastest, lower accuracy",
-                  "modelBase":  "Base - balanced speed and accuracy (default)",
-                  "modelSmall":  "Small - most accurate, ~242 MB, needs more memory",
-                  "downloadSize":  "Download size",
-                  "dataWarning":  "You are about to download {size}. This uses your data plan. The model is stored on this device and reused offline.",
-                  "memoryWarning":  "This device reports limited memory. Consider the Tiny or Base model.",
-                  "download":  "Download model",
-                  "downloading":  "Downloading model",
-                  "ready":  "Model ready",
-                  "included":  "Included in this app, no download needed",
-                  "includedNote":  "Bundled with koe. Works right away, fully offline, no data used.",
-                  "loadModel":  "Load model"
-              },
-    "step3":  {
-                  "title":  "Result",
-                  "start":  "Start transcription",
-                  "cancel":  "Cancel",
-                  "elapsed":  "Elapsed",
-                  "segments":  "Segments",
-                  "copy":  "Copy",
-                  "copied":  "Copied to clipboard",
-                  "download":  "Download",
-                  "downloadZip":  "Download all (ZIP)",
-                  "empty":  "The transcript will appear here, segment by segment.",
-                  "processing":  "Transcribing",
-                  "windowProgress":  "Window {current} of {total}"
-              },
-    "queue":  {
-                  "title":  "File queue",
-                  "addMore":  "Add more files",
-                  "clearDone":  "Clear finished",
-                  "statusPending":  "Waiting",
-                  "statusProcessing":  "Processing",
-                  "statusDone":  "Done",
-                  "statusError":  "Failed"
-              },
-    "models":  {
-                   "title":  "Model manager",
-                   "storageUsed":  "Storage used by the browser",
-                   "estimate":  "{used} of {quota} used",
-                   "delete":  "Delete",
-                   "deleting":  "Deleting",
-                   "deleted":  "Removed from this device",
-                   "checking":  "Checking cache",
-                   "cached":  "Downloaded",
-                   "notCached":  "Not downloaded",
-                   "refresh":  "Refresh",
-                   "included":  "Included in this app"
-               },
-    "errors":  {
-                   "decodeFailed":  "This file could not be decoded. It may be damaged or in a format this browser does not support.",
-                   "unsupported":  "This format is not supported by your browser. Try converting it to WAV, MP3, or MP4 first.",
-                   "modelDownload":  "The model could not be loaded. Check your connection or the model files, then try again.",
-                   "checksum":  "The downloaded model failed verification and was rejected.",
-                   "storage":  "Not enough storage space to save the model.",
-                   "outOfMemory":  "The browser ran out of memory. Try the Tiny or Base model, or a shorter file.",
-                   "worker":  "The transcription worker stopped unexpectedly. Please try again.",
-                   "unsupportedBrowser":  "This browser does not support the required features (WebAssembly). Use the latest Chrome, Edge, Firefox, or Safari.",
-                   "noFile":  "Choose a file first.",
-                   "modelNotReady":  "Download the model first.",
-                   "unknown":  "Something went wrong. Please try again."
-               },
-    "about":  {
-                  "title":  "About Koe",
-                  "privacyTitle":  "Privacy, by architecture",
-                  "privacyBody":  "Koe has no backend. There is no server that can receive your audio or transcript. All processing happens inside your browser using WebAssembly. The only network requests are: loading this site, and downloading the speech model you explicitly choose. No telemetry, no analytics, no cookies, no accounts.",
-                  "offlineTitle":  "Offline first",
-                  "offlineBody":  "After the model is downloaded once, Koe works fully offline. Install it as a PWA for the best experience.",
-                  "unlimitedTitle":  "Free and unlimited",
-                  "unlimitedBody":  "No quotas, no subscriptions, no per-minute fees. Koe is open source under the MIT license.",
-                  "nameTitle":  "The name",
-                  "nameBody":  "Koe (å£°) means voice in Japanese. It is the lighter sibling of Kikoe, the command line tool.",
-                  "licensesTitle":  "Licenses",
-                  "licensesBody":  "Koe is MIT licensed. It builds on Whisper by OpenAI (MIT), ONNX Runtime Web (MIT), Hugging Face Transformers.js (Apache-2.0), React (MIT), and Tailwind CSS (MIT). Font: Nunito (SIL Open Font License), self-hosted."
-              },
-    "help":  {
-                 "title":  "Help",
-                 "browserTitle":  "Supported browsers",
-                 "browserBody":  "Latest Chrome, Edge, Firefox, or Safari on desktop. Android Chrome works with a memory warning. iOS Safari is experimental. Multi-threading needs cross-origin isolation headers, which this site sends.",
-                 "modelTitle":  "Choosing a model",
-                 "modelBody":  "Tiny is fastest and smallest. Base is a good default. Small is the most accurate of the three but downloads about 242 MB and needs more memory. When in doubt, start with Base.",
-                 "memoryTitle":  "Memory and long files",
-                 "memoryBody":  "Audio is decoded fully in memory, so very long files (over 30 minutes) may fail on devices with little memory. Use Tiny, close other tabs, or trim the file first.",
-                 "formatTitle":  "Output formats",
-                 "formatBody":  "TXT is plain text. SRT and VTT are subtitles with timestamps. JSON contains per-segment timestamps for further processing.",
-                 "privacyTitle":  "Is my audio uploaded?",
-                 "privacyBody":  "No. Nothing is uploaded. You can verify this yourself: open your browser\u0027s network tab and watch zero requests while transcribing.",
-                 "troubleTitle":  "Troubleshooting",
-                 "troubleBody":  "Stuck or crashed? Reload the page. The model stays cached. If a download was interrupted, just press download again. If transcription fails on a long file, try a smaller model."
-             },
-    "footer":  {
-                   "openSource":  "Open source under MIT",
-                   "offlineReady":  "Offline ready",
-                   "nothingUploads":  "Nothing is uploaded"
-               },
-    "common":  {
-                   "loading":  "Loading",
-                   "themeLight":  "Switch to light theme",
-                   "themeDark":  "Switch to dark theme",
-                   "language":  "Language"
-               }
+{
+  "app": {
+    "name": "Koe",
+    "tagline": "Audio and video to text, free and private",
+    "nav": {
+      "transcribe": "Transcribe",
+      "about": "About",
+      "help": "Help"
+    }
+  },
+  "hero": {
+    "badge": "Processed on this device - nothing is uploaded",
+    "title": "Transcribe anything, right in your browser",
+    "subtitle": "Free, unlimited, and private. Your audio never leaves this device. Works offline after the model is downloaded once."
+  },
+  "step1": {
+    "title": "Choose a file",
+    "drop": "Drag and drop an audio or video file here",
+    "browse": "or click to browse",
+    "formats": "Audio: wav, mp3, m4a, flac, ogg. Video: mp4, mov, webm.",
+    "selected": "Selected file",
+    "duration": "Duration",
+    "size": "Size",
+    "remove": "Remove file"
+  },
+  "step2": {
+    "title": "Settings",
+    "language": "Language",
+    "autoDetect": "Auto-detect",
+    "model": "Model",
+    "outputFormat": "Output format",
+    "task": "Task",
+    "transcribe": "Transcribe (original language)",
+    "translate": "Translate to English",
+    "modelTiny": "Tiny - fastest, lower accuracy",
+    "modelBase": "Base - balanced speed and accuracy (default)",
+    "modelSmall": "Small - most accurate, ~242 MB, needs more memory",
+    "downloadSize": "Download size",
+    "dataWarning": "You are about to download {size}. This uses your data plan. The model is stored on this device and reused offline.",
+    "memoryWarning": "This device reports limited memory. Consider the Tiny or Base model.",
+    "download": "Download model",
+    "downloading": "Downloading model",
+    "ready": "Model ready",
+    "included": "Included in this app, no download needed",
+    "includedNote": "Bundled with koe. Works right away, fully offline, no data used.",
+    "loadModel": "Load model"
+  },
+  "step3": {
+    "title": "Result",
+    "start": "Start transcription",
+    "cancel": "Cancel",
+    "elapsed": "Elapsed",
+    "segments": "Segments",
+    "copy": "Copy",
+    "copied": "Copied to clipboard",
+    "download": "Download",
+    "downloadZip": "Download all (ZIP)",
+    "empty": "The transcript will appear here, segment by segment.",
+    "processing": "Transcribing",
+    "windowProgress": "Window {current} of {total}"
+  },
+  "queue": {
+    "title": "File queue",
+    "addMore": "Add more files",
+    "clearDone": "Clear finished",
+    "statusPending": "Waiting",
+    "statusProcessing": "Processing",
+    "statusDone": "Done",
+    "statusError": "Failed",
+    "retry": "Retry"
+  },
+  "models": {
+    "title": "Model manager",
+    "storageUsed": "Storage used by the browser",
+    "estimate": "{used} of {quota} used",
+    "delete": "Delete",
+    "deleting": "Deleting",
+    "deleted": "Removed from this device",
+    "checking": "Checking cache",
+    "cached": "Downloaded",
+    "notCached": "Not downloaded",
+    "refresh": "Refresh",
+    "included": "Included in this app"
+  },
+  "errors": {
+    "decodeFailed": "This file could not be decoded. It may be damaged or in a format this browser does not support.",
+    "unsupported": "This format is not supported by your browser. Try converting it to WAV, MP3, or MP4 first.",
+    "modelDownload": "The model could not be loaded. Check your connection or the model files, then try again.",
+    "checksum": "The downloaded model failed verification and was rejected.",
+    "storage": "Not enough storage space to save the model.",
+    "outOfMemory": "The browser ran out of memory. Try the Tiny or Base model, or a shorter file.",
+    "worker": "The transcription worker stopped unexpectedly. Please try again.",
+    "unsupportedBrowser": "This browser does not support the required features (WebAssembly). Use the latest Chrome, Edge, Firefox, or Safari.",
+    "noFile": "Choose a file first.",
+    "modelNotReady": "Download the model first.",
+    "unknown": "Something went wrong. Please try again."
+  },
+  "about": {
+    "title": "About Koe",
+    "privacyTitle": "Privacy, by architecture",
+    "privacyBody": "Koe has no backend. There is no server that can receive your audio or transcript. All processing happens inside your browser using WebAssembly. The only network requests are: loading this site, and downloading the speech model you explicitly choose. No telemetry, no analytics, no cookies, no accounts.",
+    "offlineTitle": "Offline first",
+    "offlineBody": "After the model is downloaded once, Koe works fully offline. Install it as a PWA for the best experience.",
+    "unlimitedTitle": "Free and unlimited",
+    "unlimitedBody": "No quotas, no subscriptions, no per-minute fees. Koe is open source under the MIT license.",
+    "nameTitle": "The name",
+    "nameBody": "Koe (å£°) means voice in Japanese. It is the lighter sibling of Kikoe, the command line tool.",
+    "licensesTitle": "Licenses",
+    "licensesBody": "Koe is MIT licensed. It builds on Whisper by OpenAI (MIT), ONNX Runtime Web (MIT), Hugging Face Transformers.js (Apache-2.0), React (MIT), and Tailwind CSS (MIT). Font: Nunito (SIL Open Font License), self-hosted."
+  },
+  "help": {
+    "title": "Help",
+    "browserTitle": "Supported browsers",
+    "browserBody": "Latest Chrome, Edge, Firefox, or Safari on desktop. Android Chrome works with a memory warning. iOS Safari is experimental. Multi-threading needs cross-origin isolation headers, which this site sends.",
+    "modelTitle": "Choosing a model",
+    "modelBody": "Tiny is fastest and smallest. Base is a good default. Small is the most accurate of the three but downloads about 242 MB and needs more memory. When in doubt, start with Base.",
+    "memoryTitle": "Memory and long files",
+    "memoryBody": "Audio is decoded fully in memory, so very long files (over 30 minutes) may fail on devices with little memory. Use Tiny, close other tabs, or trim the file first.",
+    "formatTitle": "Output formats",
+    "formatBody": "TXT is plain text. SRT and VTT are subtitles with timestamps. JSON contains per-segment timestamps for further processing.",
+    "privacyTitle": "Is my audio uploaded?",
+    "privacyBody": "No. Nothing is uploaded. You can verify this yourself: open your browser's network tab and watch zero requests while transcribing.",
+    "troubleTitle": "Troubleshooting",
+    "troubleBody": "Stuck or crashed? Reload the page. If the model fails to load, see the Model failed to load section. The Tiny and Base models are bundled with koe and load locally; only Small downloads. If transcription fails on a long file, try a smaller model.",
+    "recoverFailedTitle": "The model fails to load",
+    "recoverFailedBody": "Click the Coba lagi button next to the error. If it keeps failing, clear site data (browser DevTools, Application, Storage, Clear site data), then reload the page. If Base still fails, try Tiny. If the Small model fails to download, check your connection and try again; partial downloads resume from the browser cache."
+  },
+  "footer": {
+    "openSource": "Open source under MIT",
+    "offlineReady": "Offline ready",
+    "nothingUploads": "Nothing is uploaded"
+  },
+  "common": {
+    "loading": "Loading",
+    "themeLight": "Switch to light theme",
+    "themeDark": "Switch to dark theme",
+    "language": "Language"
+  }
 }

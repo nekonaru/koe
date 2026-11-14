@@ -366,6 +366,13 @@ Klik **Unduh model** lagi. Unduhan dilanjutkan dari cache browser, dan tidak ada
 </details>
 
 <details>
+<summary><b>Model tertanam gagal dimuat. Apa yang harus saya lakukan?</b></summary>
+
+Ini berarti file model di dalam aplikasi tidak bisa dibaca. Klik **Coba lagi** di sebelah pesan error. Jika masih gagal, bersihkan data situs ini (DevTools browser, tab Application, Storage, Clear site data) lalu muat ulang halaman. Jika Base masih gagal, pindah ke Tiny. Sebagai upaya terakhir, periksa sisa ruang penyimpanan dan coba lagi, karena model Tiny dan Base tertanam cukup besar dan disajikan dari aplikasi.
+
+</details>
+
+<details>
 <summary><b>File saya sangat panjang atau tab crash. Apa yang bisa saya lakukan?</b></summary>
 
 Audio didekode sepenuhnya di memori, jadi file sangat panjang butuh RAM besar. Pakai model Tiny atau Base, tutup tab lain, atau potong file lebih dulu. koe memberi peringatan pada perangkat dengan RAM kurang dari 4 GB.

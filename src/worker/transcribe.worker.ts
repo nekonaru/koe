@@ -86,7 +86,42 @@ async function getTranscriber(modelId: ModelId): Promise<AutomaticSpeechRecognit
   const cached = transcriberCache.get(modelId)
   if (cached) return cached
 
-  const { hfId } = getModel(modelId)
+  const info = getModel(modelId)
+  const { hfId, bundled } = info
+
+  if (bundled) {
+    // Bundled models must never fall back to the network. If the local files
+    // are missing or the cache is stale, fail fast with a clear message.
+    // Clear any stale remote cache entries once so a previous interrupted
+    // download cannot shadow the bundled copy.
+    try {
+      const keys = await caches.keys()
+      for (const key of keys) {
+        const cache = await caches.open(key)
+        const requests = await cache.keys()
+        const needle = hfId.toLowerCase()
+        await Promise.all(
+          requests
+            .filter((request) => request.url.toLowerCase().includes(needle))
+            .map((request) => cache.delete(request)),
+        )
+      }
+    } catch {
+      // best effort; a stale entry only affects the first load
+    }
+    const previous = env.allowRemoteModels
+    env.allowRemoteModels = false
+    try {
+      return await loadPipeline(hfId, modelId)
+    } finally {
+      env.allowRemoteModels = previous
+    }
+  }
+
+  return loadPipeline(hfId, modelId)
+}
+
+async function loadPipeline(hfId: string, modelId: ModelId): Promise<AutomaticSpeechRecognitionPipeline> {
   const transcriber = await pipeline('automatic-speech-recognition', hfId, {
     dtype: 'q8',
     device: 'wasm',
