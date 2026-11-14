@@ -71,6 +71,10 @@
 | **Structured data** | JSON with per-segment start and end timestamps in milliseconds |
 | **Copy and download** | One click to clipboard, or save the chosen format per file |
 | **ZIP export** | Download every finished transcript in one archive |
+| **Playback sync** | Listen to the audio with the current segment highlighted; click any timestamp to jump |
+| **Search in transcripts** | Filter matches, dim non-matches, jump to the first hits |
+| **Inline editing** | Edit any segment directly in the list; exports reflect your edits |
+| **Word and segment stats** | Result footer shows word and segment counts |
 
 ### Models
 

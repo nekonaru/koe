@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.5.0
+
+A much richer transcript experience: play along with the audio, search, edit in place, and better recovery from decode failures.
+
+### New features
+
+- **Playback sync.** Click Listen to hear the audio with the current segment highlighted; click any segment's timestamp to jump to it.
+- **Search in transcripts.** Filter matches, dim non-matches, jump to the first hits; works per file.
+- **Inline editing.** Edit any segment directly in the list; exports reflect your edits.
+- **Word and segment stats.** The result footer shows word count and segment count.
+- **Decode failure recovery.** Files that cannot be decoded now retry by re-decoding the original file.
+
 ## v1.4.0
 
 Faster first use: Tiny is the default model, bundled models precache in the background, and the in-app guide and FAQ are richer.

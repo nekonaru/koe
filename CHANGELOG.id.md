@@ -2,6 +2,18 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.5.0
+
+Pengalaman transkrip jauh lebih kaya: dengarkan berbarengan dengan audio, cari, edit langsung di daftar, dan pemulihan lebih baik dari kegagalan dekode.
+
+### Fitur baru
+
+- **Sinkron pemutaran.** Klik Dengarkan untuk mendengar audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat ke sana.
+- **Pencarian di transkrip.** Saring kecocokan, redupkan baris non-cocok, dan lompat ke hasil pertama.
+- **Edit langsung.** Edit segmen mana pun langsung di daftar; ekspor mengikuti tulisan kamu.
+- **Statistik kata dan segmen.** Footer hasil menampilkan jumlah kata dan segmen.
+- **Pemulihan kegagalan dekode.** File yang tidak bisa didekode sekarang mencoba lagi dengan mendekode ulang file asli.
+
 ## v1.4.0
 
 Pemakaian pertama lebih cepat: Tiny jadi default, model tertanam di-precache di latar belakang, dan panduan serta FAQ di dalam aplikasi lebih lengkap.

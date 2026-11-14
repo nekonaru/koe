@@ -71,6 +71,10 @@
 | **Data terstruktur** | JSON dengan timestamp mulai dan selesai per segmen dalam milidetik |
 | **Salin dan unduh** | Satu klik ke clipboard, atau simpan format pilihan per file |
 | **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip |
+| **Sinkron pemutaran** | Dengarkan audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat |
+| **Pencarian di transkrip** | Saring kecocokan, redupkan baris non-cocok, lompat ke hasil pertama |
+| **Edit langsung** | Edit segmen mana pun langsung di daftar; ekspor mengikuti tulisan kamu |
+| **Statistik kata dan segmen** | Footer hasil menampilkan jumlah kata dan segmen |
 
 ### Model
 

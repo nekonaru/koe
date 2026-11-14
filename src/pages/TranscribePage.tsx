@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import JSZip from 'jszip'
 import { Dropzone } from '../components/Dropzone'
+import { TranscriptView } from '../components/TranscriptView'
 import { ModelManager } from '../components/ModelManager'
 import { GuideSection } from '../components/GuideSection'
 import { useI18n } from '../i18n/useI18n'
@@ -70,6 +71,8 @@ export function TranscribePage() {
 
   const workerRef = useRef<Worker | null>(null)
   const pcmStoreRef = useRef(new Map<string, Float32Array>())
+  const fileStoreRef = useRef(new Map<string, File>())
+  const [pcmIds, setPcmIds] = useState<Set<string>>(new Set())
   const filePercentsRef = useRef(new Map<string, number>())
   const activeIdRef = useRef<string | null>(null)
   const pendingAfterReadyRef = useRef<string | null>(null)
@@ -242,6 +245,25 @@ export function TranscribePage() {
     [createWorker],
   )
 
+  const decodeItem = useCallback((id: string, file: File) => {
+    decodeToPcm16kMono(file)
+      .then(({ pcm, durationSec }) => {
+        pcmStoreRef.current.set(id, pcm)
+        setPcmIds((current) => new Set(current).add(id))
+        setItems((current) =>
+          current.map((item) => (item.id === id ? { ...item, status: 'ready', durationSec } : item)),
+        )
+      })
+      .catch((error: unknown) => {
+        const koe = toKoeError(error)
+        setItems((current) =>
+          current.map((item) =>
+            item.id === id ? { ...item, status: 'error', errorCode: koe.code, detail: null } : item,
+          ),
+        )
+      })
+  }, [])
+
   const startItem = useCallback(
     (item: QueueItem) => {
       // Only one transcription may be in flight: segments and progress are
@@ -249,7 +271,23 @@ export function TranscribePage() {
       // queue chain.
       if ((item.status !== 'ready' && item.status !== 'error') || activeIdRef.current !== null) return
       if (item.status === 'error') {
-        // Retry: clear partial output so the UI shows a fresh run.
+        // Some failures happen before any PCM exists (unreadable file, unsupported
+        // codec): retry by decoding the original file again from scratch.
+        if (item.errorCode === 'decodeFailed' && fileStoreRef.current.has(item.id)) {
+          const file = fileStoreRef.current.get(item.id)
+          if (file) {
+            setItems((current) =>
+              current.map((entry) =>
+                entry.id === item.id
+                  ? { ...entry, segments: [], percent: 0, window: 0, totalWindows: 0, errorCode: null, detail: null, status: 'decoding' }
+                  : entry,
+              ),
+            )
+            decodeItem(item.id, file)
+            return
+          }
+        }
+        // Work was partially done: clear it so the UI shows a fresh run.
         setItems((current) =>
           current.map((entry) =>
             entry.id === item.id
@@ -265,7 +303,7 @@ export function TranscribePage() {
       // Download the model first; transcription starts automatically once ready.
       initModel(model, item.id)
     },
-    [initModel, launch, model, modelReady],
+    [decodeItem, initModel, launch, model, modelReady],
   )
 
   const addFiles = useCallback(
@@ -287,26 +325,11 @@ export function TranscribePage() {
       setItems((current) => [...current, ...created])
       for (const [index, file] of files.entries()) {
         const id = created[index].id
-        decodeToPcm16kMono(file)
-          .then(({ pcm, durationSec }) => {
-            pcmStoreRef.current.set(id, pcm)
-            setItems((current) =>
-              current.map((item) =>
-                item.id === id ? { ...item, status: 'ready', durationSec } : item,
-              ),
-            )
-          })
-          .catch((error: unknown) => {
-            const koe = toKoeError(error)
-            setItems((current) =>
-              current.map((item) =>
-                item.id === id ? { ...item, status: 'error', errorCode: koe.code } : item,
-              ),
-            )
-          })
+        fileStoreRef.current.set(id, file)
+        decodeItem(id, file)
       }
     },
-    [],
+    [decodeItem],
   )
 
   const cancelItem = useCallback((item: QueueItem) => {
@@ -327,13 +350,19 @@ export function TranscribePage() {
 
   const removeItem = useCallback((item: QueueItem) => {
     pcmStoreRef.current.delete(item.id)
+    fileStoreRef.current.delete(item.id)
+    setPcmIds((current) => { const next = new Set(current); next.delete(item.id); return next })
     setItems((current) => current.filter((entry) => entry.id !== item.id))
   }, [])
 
   const clearDone = useCallback(() => {
     setItems((current) => {
       for (const entry of current) {
-        if (entry.status === 'done') pcmStoreRef.current.delete(entry.id)
+        if (entry.status === 'done') {
+          pcmStoreRef.current.delete(entry.id)
+          fileStoreRef.current.delete(entry.id)
+          setPcmIds((currentIds) => { const next = new Set(currentIds); next.delete(entry.id); return next })
+        }
       }
       return current.filter((entry) => entry.status !== 'done')
     })
@@ -405,6 +434,9 @@ export function TranscribePage() {
     () => () => {
       workerRef.current?.terminate()
       workerRef.current = null
+      pcmStoreRef.current.clear()
+      fileStoreRef.current.clear()
+      setPcmIds(new Set())
     },
     [],
   )
@@ -717,9 +749,20 @@ export function TranscribePage() {
                     </button>
                   </div>
                 </header>
-                <pre className="max-h-80 overflow-auto whitespace-pre-wrap bg-white px-4 py-3 font-sans text-sm leading-relaxed text-neutral-800 dark:bg-[#191D29] dark:text-warm/90">
-                  {item.segments.length === 0 ? t('step3.empty') : formatTranscript(item.segments, outputFormat)}
-                </pre>
+                <TranscriptView
+                  canPlay={pcmIds.has(item.id)}
+                  getPcm={() => pcmStoreRef.current.get(item.id) ?? null}
+                  segments={item.segments}
+                  onEditSegment={(index, text) =>
+                    setItems((current) =>
+                      current.map((entry) =>
+                        entry.id === item.id
+                          ? { ...entry, segments: entry.segments.map((segment, segIndex) => (segIndex === index ? { ...segment, text } : segment)) }
+                          : entry,
+                      ),
+                    )
+                  }
+                />
               </article>
             ))}
           </div>
