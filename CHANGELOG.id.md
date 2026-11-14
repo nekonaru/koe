@@ -2,6 +2,15 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.1.1
+
+Perbaikan bug untuk antrean bersamaan dan pesan error muat yang lebih jelas.
+
+### Perbaikan bug
+
+- **Desync antrean saat klik cepat.** Memperbaiki klik beberapa tombol Mulai sekaligus yang membuat antrean nyangkut permanen; sekarang hanya satu transkripsi berjalan dalam satu waktu dan tombol Mulai nonaktif saat yang lain sedang berjalan.
+- **Kata pesan error muat.** Pesan kegagalan model sekarang menyatakan model tidak bisa dimuat, bukan seolah masalah unduhan.
+
 ## v1.1.0
 
 Transkripsi audio dan video ke teks yang gratis, tanpa batas, dan privat di browser kamu, sekarang dengan Tiny dan Base tertanam sehingga jalan offline sejak halaman pertama.

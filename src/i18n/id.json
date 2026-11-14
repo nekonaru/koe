@@ -84,7 +84,7 @@
     "errors":  {
                    "decodeFailed":  "File ini tidak bisa didekode. Mungkin rusak atau formatnya tidak didukung browser ini.",
                    "unsupported":  "Format ini tidak didukung browser kamu. Coba ubah dulu ke WAV, MP3, atau MP4.",
-                   "modelDownload":  "Model tidak bisa diunduh. Periksa koneksi kamu lalu coba lagi.",
+                   "modelDownload":  "Model tidak bisa dimuat. Periksa koneksi atau file model, lalu coba lagi.",
                    "checksum":  "Model yang diunduh gagal diverifikasi dan ditolak.",
                    "storage":  "Ruang penyimpanan tidak cukup untuk menyimpan model.",
                    "outOfMemory":  "Browser kehabisan memori. Coba model Tiny atau Base, atau file yang lebih pendek.",
