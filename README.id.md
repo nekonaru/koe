@@ -76,8 +76,8 @@
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| **Model Tiny** | Tertanam di koe, paling cepat, akurasi lebih rendah |
-| **Model Base** | Tertanam di koe, seimbang antara kecepatan dan akurasi, default |
+| **Model Tiny** | Tertanam di koe, paling cepat, default |
+| **Model Base** | Tertanam di koe, seimbang antara kecepatan dan akurasi |
 | **Model Small** | Paling akurat dari ketiganya, sekitar 242 MB, diunduh saat dibutuhkan, butuh memori lebih |
 | **Bobot terkuantisasi** | Model Whisper ONNX yang terkuantisasi untuk penggunaan browser |
 | **Pengelola model** | Lihat model mana yang tersimpan, total penyimpanan browser yang terpakai, dan hapus model yang tidak dibutuhkan |
@@ -212,7 +212,7 @@ Dev server mencetak URL lokalnya (biasanya `http://localhost:5173`). Perubahan d
 
 1. Lepas file audio atau video ke drop zone, atau klik untuk memilih
 2. Tunggu sampai antrean menampilkan file siap (durasi muncul)
-3. Pilih bahasa (default **Indonesia**) dan model (default **Base**)
+3. Pilih bahasa (default **Indonesia**) dan model (default **Tiny**)
 4. Klik **Mulai transkripsi** dan lihat segmen muncul bertahap
 5. Setelah selesai, klik **Salin** atau **Unduh** (TXT, SRT, VTT, JSON)
 
@@ -349,7 +349,7 @@ Tidak. koe tidak punya backend, dan semua pemrosesan terjadi di dalam browser ka
 <details>
 <summary><b>Model mana yang harus saya pilih?</b></summary>
 
-Tiny untuk kecepatan dan file pendek, Base untuk kebanyakan kasus (default dan dimuat otomatis), Small untuk akurasi terbaik saat perangkat kamu punya cukup memori.
+Tiny untuk kecepatan dan file pendek dan default, Base untuk akurasi lebih baik, Small untuk akurasi terbaik saat perangkat kamu punya cukup memori.
 
 </details>
 

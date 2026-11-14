@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import JSZip from 'jszip'
 import { Dropzone } from '../components/Dropzone'
 import { ModelManager } from '../components/ModelManager'
+import { GuideSection } from '../components/GuideSection'
 import { useI18n } from '../i18n/useI18n'
 import { decodeToPcm16kMono, formatDuration } from '../audio/decode'
 import { DEFAULT_MODEL, LANGUAGES, formatBytes, getModel, type ModelId } from '../lib/models'
@@ -724,6 +725,9 @@ export function TranscribePage() {
           </div>
         </section>
       )}
+
+      {/* Guide and FAQ */}
+      <GuideSection />
 
       {/* Model manager */}
       <div className="mt-8">

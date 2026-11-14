@@ -135,5 +135,51 @@
     "themeLight": "Ganti ke tema terang",
     "themeDark": "Ganti ke tema gelap",
     "language": "Bahasa"
+  },
+  "guide": {
+    "title": "Cara kerja koe",
+    "faqTitle": "Pertanyaan yang sering diajukan",
+    "step1": {
+      "title": "1. Lepas file",
+      "body": "Audio atau video, sampai rekaman panjang. Semuanya didekode di dalam browser kamu."
+    },
+    "step2": {
+      "title": "2. koe yang bekerja",
+      "body": "Tanpa akun, tanpa unggahan. Model sudah tertanam di koe; kunjungan pertama mengunduhnya sekali, lalu tersimpan di cache."
+    },
+    "step3": {
+      "title": "3. Transkripsi",
+      "body": "Pilih bahasa dan klik Mulai. Segmen muncul selagi dikenali."
+    },
+    "step4": {
+      "title": "4. Ekspor",
+      "body": "Salin ke clipboard, atau unduh TXT, SRT, VTT, atau JSON. Ada ZIP untuk banyak file."
+    },
+    "faq": {
+      "firstLoad": {
+        "q": "Muat pertama terasa lambat. Apa yang harus saya harapkan?",
+        "a": "Kunjungan pertama mengunduh model tertanam sekali (sekitar 43 MB untuk Tiny, 74 MB untuk Base). Setelah itu tersimpan di cache dan setiap kunjungan langsung, bahkan offline. Pada koneksi lambat, pembukaan pertama bisa memakan waktu satu menit; kunjungan berikutnya cepat."
+      },
+      "error": {
+        "q": "Model gagal dimuat. Apa yang harus saya lakukan?",
+        "a": "Klik Coba lagi di sebelah pesan error. Jika masih gagal, bersihkan data situs ini (DevTools browser, Application, Storage, Clear site data) lalu muat ulang halaman. Jika Base masih gagal, pindah ke Tiny. Untuk model Small, periksa koneksi dan coba lagi."
+      },
+      "offline": {
+        "q": "Apakah jalan offline?",
+        "a": "Ya. Tiny dan Base tertanam dan jalan tanpa jaringan setelah kunjungan pertama. Small diunduh sekali dari Hugging Face lalu juga jalan offline."
+      },
+      "whichModel": {
+        "q": "Model mana yang sebaiknya saya pilih?",
+        "a": "Tiny paling cepat dan jadi default. Base lebih akurat dengan file sedikit lebih besar. Small paling akurat dari ketiganya dan diunduh pada pemakaian pertama. Jika ragu, tetap pakai Tiny; pindah ke Base hanya jika transkrip belum cukup baik."
+      },
+      "privacy": {
+        "q": "Apakah audio saya diunggah ke mana pun?",
+        "a": "Tidak. koe tidak punya backend. Audio didekode dan ditranskrip di dalam browser kamu; tidak ada yang keluar dari perangkat kamu kecuali unduhan model itu sendiri, yang tidak berisi audio kamu."
+      },
+      "longFile": {
+        "q": "File saya sangat panjang atau tab crash. Apa yang bisa saya lakukan?",
+        "a": "Pakai Tiny, tutup tab lain, atau potong file lebih dulu. Audio didekode sepenuhnya di memori, jadi file sangat panjang butuh RAM besar. koe memberi peringatan pada perangkat dengan RAM kurang dari 4 GB."
+      }
+    }
   }
 }

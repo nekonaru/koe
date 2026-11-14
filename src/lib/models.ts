@@ -16,7 +16,7 @@ export const MODELS: readonly ModelInfo[] = [
   { id: 'small', hfId: 'onnx-community/whisper-small', approxBytes: 241_700_000, bundled: false },
 ] as const
 
-export const DEFAULT_MODEL: ModelId = 'base'
+export const DEFAULT_MODEL: ModelId = 'tiny'
 
 export function getModel(id: ModelId): ModelInfo {
   const model = MODELS.find((m) => m.id === id)
