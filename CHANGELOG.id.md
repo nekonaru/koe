@@ -2,6 +2,15 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.3.0
+
+Model tertanam sekarang dimuat otomatis begitu file dipilih, jadi transkripsi langsung jalan tanpa langkah manual.
+
+### Fitur baru
+
+- **Muat otomatis saat file dilepas.** Saat file ditambahkan, model tertanam yang dipilih (Tiny atau Base) langsung dimuat di latar belakang; tidak perlu klik Muat model. Perangkat dengan RAM kurang dari 4 GB dan model Small tidak ikut muat otomatis; keduanya butuh aksi eksplisit.
+- **Tidak ada muat ganda.** Permintaan muat model yang bersamaan digabungkan jadi satu muat per model.
+
 ## v1.2.0
 
 Rilis ketahanan: kegagalan muat model sekarang bisa dipulihkan dari dalam aplikasi dengan tombol Coba lagi dan langkah-langkah terarah.

@@ -70,6 +70,9 @@ const workerScope = self as unknown as {
 }
 
 const transcriberCache = new Map<ModelId, AutomaticSpeechRecognitionPipeline>()
+// Coalesce concurrent loadPipeline calls for the same model so the UI can
+// auto-load a model while the user is already triggering an action.
+const loadingPipelines = new Map<ModelId, Promise<AutomaticSpeechRecognitionPipeline>>()
 
 function post(message: FromWorker, transfer?: Transferable[]) {
   if (transfer) {
@@ -91,42 +94,55 @@ async function getTranscriber(modelId: ModelId): Promise<AutomaticSpeechRecognit
   const cached = transcriberCache.get(modelId)
   if (cached) return cached
 
-  const info = getModel(modelId)
-  const { hfId, bundled } = info
+  return loadPipeline(modelId)
+}
 
-  if (bundled) {
+function loadPipeline(modelId: ModelId): Promise<AutomaticSpeechRecognitionPipeline> {
+  const inflight = loadingPipelines.get(modelId)
+  if (inflight) return inflight
+
+  const { hfId, bundled } = getModel(modelId)
+  const promise = (async () => {
     // Bundled models must never fall back to the network. If the local files
     // are missing or the cache is stale, fail fast with a clear message.
     // Clear any stale remote cache entries once so a previous interrupted
     // download cannot shadow the bundled copy.
-    try {
-      const keys = await caches.keys()
-      for (const key of keys) {
-        const cache = await caches.open(key)
-        const requests = await cache.keys()
-        const needle = hfId.toLowerCase()
-        await Promise.all(
-          requests
-            .filter((request) => request.url.toLowerCase().includes(needle))
-            .map((request) => cache.delete(request)),
-        )
+    if (bundled) {
+      try {
+        const keys = await caches.keys()
+        for (const key of keys) {
+          const cache = await caches.open(key)
+          const requests = await cache.keys()
+          const needle = hfId.toLowerCase()
+          await Promise.all(
+            requests
+              .filter((request) => request.url.toLowerCase().includes(needle))
+              .map((request) => cache.delete(request)),
+          )
+        }
+      } catch {
+        // best effort; a stale entry only affects the first load
       }
-    } catch {
-      // best effort; a stale entry only affects the first load
+      const previous = env.allowRemoteModels
+      env.allowRemoteModels = false
+      try {
+        return await createPipeline(hfId, modelId)
+      } finally {
+        env.allowRemoteModels = previous
+      }
     }
-    const previous = env.allowRemoteModels
-    env.allowRemoteModels = false
-    try {
-      return await loadPipeline(hfId, modelId)
-    } finally {
-      env.allowRemoteModels = previous
-    }
-  }
 
-  return loadPipeline(hfId, modelId)
+    return createPipeline(hfId, modelId)
+  })()
+
+  loadingPipelines.set(modelId, promise)
+  promise.finally(() => {
+    loadingPipelines.delete(modelId)
+  })
+  return promise
 }
 
-async function loadPipeline(hfId: string, modelId: ModelId): Promise<AutomaticSpeechRecognitionPipeline> {
+async function createPipeline(hfId: string, modelId: ModelId): Promise<AutomaticSpeechRecognitionPipeline> {
   const transcriber = await pipeline('automatic-speech-recognition', hfId, {
     dtype: 'q8',
     device: 'wasm',

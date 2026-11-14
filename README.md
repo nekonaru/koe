@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
   <img src="public/icon.svg" alt="Koe logo" width="120" />
   <h1>Koe: Private Transcription in Your Browser</h1>
   <p><b>Transcribe audio and video to text in your browser, free and unlimited,<br/>
@@ -256,24 +256,24 @@ koe needs the network only when you choose the Small model:
 
 ```
 koe/
-├── src/
-│   ├── main.tsx               # app entry, service worker registration
-│   ├── App.tsx                # shell: header, nav, theme, footer
-│   ├── audio/                 # Web Audio decode and resample to 16 kHz mono
-│   ├── worker/                # transcription worker (Transformers.js, WASM)
-│   ├── format/                # TXT, SRT, VTT, JSON output builders
-│   ├── model/                 # model cache detection and storage management
-│   ├── i18n/                  # en.json and id.json dictionaries
-│   ├── components/            # Dropzone, ModelManager, Logo
-│   └── pages/                 # Transcribe, About, Help
-├── public/                    # icons, manifest, service worker, _headers
-│   └── models/                # bundled Whisper Tiny and Base (ONNX, quantized)
-├── scripts/                   # copy-ort.mjs, generate-icons.mjs
-├── tests/                     # Vitest unit tests
-├── docs/                      # PRD, benchmark, third-party licenses
-├── LICENSE
-├── README.md                  # main documentation (English)
-└── README.id.md               # documentation (Bahasa Indonesia)
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ main.tsx               # app entry, service worker registration
+â”‚   â”œâ”€â”€ App.tsx                # shell: header, nav, theme, footer
+â”‚   â”œâ”€â”€ audio/                 # Web Audio decode and resample to 16 kHz mono
+â”‚   â”œâ”€â”€ worker/                # transcription worker (Transformers.js, WASM)
+â”‚   â”œâ”€â”€ format/                # TXT, SRT, VTT, JSON output builders
+â”‚   â”œâ”€â”€ model/                 # model cache detection and storage management
+â”‚   â”œâ”€â”€ i18n/                  # en.json and id.json dictionaries
+â”‚   â”œâ”€â”€ components/            # Dropzone, ModelManager, Logo
+â”‚   â””â”€â”€ pages/                 # Transcribe, About, Help
+â”œâ”€â”€ public/                    # icons, manifest, service worker, _headers
+â”‚   â””â”€â”€ models/                # bundled Whisper Tiny and Base (ONNX, quantized)
+â”œâ”€â”€ scripts/                   # copy-ort.mjs, generate-icons.mjs
+â”œâ”€â”€ tests/                     # Vitest unit tests
+â”œâ”€â”€ docs/                      # PRD, benchmark, third-party licenses
+â”œâ”€â”€ LICENSE
+â”œâ”€â”€ README.md                  # main documentation (English)
+â””â”€â”€ README.id.md               # documentation (Bahasa Indonesia)
 ```
 
 ---
@@ -350,7 +350,7 @@ No. koe has no backend, and all processing happens inside your browser. You can 
 <details>
 <summary><b>Which model should I choose?</b></summary>
 
-Tiny for speed and short files, Base for most use (the default), Small for the best accuracy when your device has enough memory.
+Tiny for speed and short files, Base for most use (the default and pre-loaded automatically), Small for the best accuracy when your device has enough memory.
 
 </details>
 
@@ -413,3 +413,4 @@ Whisper can produce inaccurate or fabricated text, especially on silence. Review
 ## License
 
 Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+

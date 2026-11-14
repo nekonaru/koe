@@ -408,6 +408,21 @@ export function TranscribePage() {
     [],
   )
 
+  // Auto-warm bundled models once a file is added so transcription can start
+  // instantly; Small still requires an explicit download. Devices reporting
+  // less than 4 GB RAM are excluded to avoid unnecessary memory pressure.
+  const autoWarmRef = useRef(new Set<ModelId>())
+  useEffect(() => {
+    if (items.length === 0) return
+    const info = getModel(model)
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
+    const lowMemory = typeof deviceMemory === 'number' && deviceMemory > 0 && deviceMemory < 4
+    if (!info.bundled || modelReady[model] || download.active || lowMemory) return
+    if (autoWarmRef.current.has(model)) return
+    autoWarmRef.current.add(model)
+    initModel(model)
+  }, [items.length, model, modelReady, download.active, initModel])
+
   if (!supported) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
