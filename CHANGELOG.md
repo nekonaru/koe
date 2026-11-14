@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.3.0
+
+Bundled models now load automatically once a file is added, so transcription starts without a manual step.
+
+### New features
+
+- **Auto-load on file drop.** When a file is added, the selected bundled model (Tiny or Base) starts loading in the background automatically; no Load model click is needed. Devices with less than 4 GB of RAM and the Small model are excluded from auto-loading; they require an explicit action.
+- **No duplicate loads.** Concurrent model load requests are coalesced so only one load runs per model.
+
 ## v1.2.0
 
 Resilience release: model load failures now recover in-app with a Retry button and guided steps.

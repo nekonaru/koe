@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
   <img src="public/icon.svg" alt="Logo Koe" width="120" />
   <h1>Koe: Transkripsi Privat di Browser Kamu</h1>
   <p><b>Ubah audio dan video menjadi teks di browser kamu, gratis dan tanpa batas,<br/>
@@ -256,23 +256,23 @@ koe hanya butuh jaringan saat kamu memilih model Small:
 
 ```
 koe/
-├── src/
-│   ├── main.tsx               # entry aplikasi, registrasi service worker
-│   ├── App.tsx                # shell: header, navigasi, tema, footer
-│   ├── audio/                 # dekode Web Audio dan resample ke PCM 16 kHz mono
-│   ├── worker/                # worker transkripsi (Transformers.js, WASM)
-│   ├── format/                # pembangun keluaran TXT, SRT, VTT, JSON
-│   ├── model/                 # deteksi cache model dan pengelolaan penyimpanan
-│   ├── i18n/                  # kamus en.json dan id.json
-│   ├── components/            # Dropzone, ModelManager, Logo
-│   └── pages/                 # Transcribe, About, Help
-├── public/                    # ikon, manifest, service worker, _headers (termasuk models/)
-├── scripts/                   # copy-ort.mjs, generate-icons.mjs
-├── tests/                     # unit test Vitest
-├── docs/                      # PRD, benchmark, lisensi pihak ketiga
-├── LICENSE
-├── README.md                  # dokumentasi utama (Inggris)
-└── README.id.md               # dokumentasi (Bahasa Indonesia)
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ main.tsx               # entry aplikasi, registrasi service worker
+â”‚   â”œâ”€â”€ App.tsx                # shell: header, navigasi, tema, footer
+â”‚   â”œâ”€â”€ audio/                 # dekode Web Audio dan resample ke PCM 16 kHz mono
+â”‚   â”œâ”€â”€ worker/                # worker transkripsi (Transformers.js, WASM)
+â”‚   â”œâ”€â”€ format/                # pembangun keluaran TXT, SRT, VTT, JSON
+â”‚   â”œâ”€â”€ model/                 # deteksi cache model dan pengelolaan penyimpanan
+â”‚   â”œâ”€â”€ i18n/                  # kamus en.json dan id.json
+â”‚   â”œâ”€â”€ components/            # Dropzone, ModelManager, Logo
+â”‚   â””â”€â”€ pages/                 # Transcribe, About, Help
+â”œâ”€â”€ public/                    # ikon, manifest, service worker, _headers (termasuk models/)
+â”œâ”€â”€ scripts/                   # copy-ort.mjs, generate-icons.mjs
+â”œâ”€â”€ tests/                     # unit test Vitest
+â”œâ”€â”€ docs/                      # PRD, benchmark, lisensi pihak ketiga
+â”œâ”€â”€ LICENSE
+â”œâ”€â”€ README.md                  # dokumentasi utama (Inggris)
+â””â”€â”€ README.id.md               # dokumentasi (Bahasa Indonesia)
 ```
 
 ---
@@ -349,7 +349,7 @@ Tidak. koe tidak punya backend, dan semua pemrosesan terjadi di dalam browser ka
 <details>
 <summary><b>Model mana yang harus saya pilih?</b></summary>
 
-Tiny untuk kecepatan dan file pendek, Base untuk kebanyakan kasus (default), Small untuk akurasi terbaik saat perangkat kamu punya cukup memori.
+Tiny untuk kecepatan dan file pendek, Base untuk kebanyakan kasus (default dan dimuat otomatis), Small untuk akurasi terbaik saat perangkat kamu punya cukup memori.
 
 </details>
 
@@ -412,6 +412,7 @@ Whisper bisa menghasilkan teks yang tidak akurat atau mengarang, terutama pada k
 ## Lisensi
 
 Didistribusikan di bawah **MIT License**. Lihat [`LICENSE`](LICENSE) untuk informasi lebih lanjut.
+
 
 
 
