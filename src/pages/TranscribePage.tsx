@@ -241,7 +241,10 @@ export function TranscribePage() {
 
   const startItem = useCallback(
     (item: QueueItem) => {
-      if (item.status !== 'ready') return
+      // Only one transcription may be in flight: segments and progress are
+      // routed to a single active item. The rest are auto-started via the
+      // queue chain.
+      if (item.status !== 'ready' || activeIdRef.current !== null) return
       if (modelReady[model]) {
         launch(item)
         return
@@ -331,6 +334,7 @@ export function TranscribePage() {
   }, [busy])
 
   const doneItems = useMemo(() => items.filter((item) => item.status === 'done'), [items])
+  const anyProcessing = items.some((item) => item.status === 'processing')
 
   const copyTranscript = useCallback(
     async (item: QueueItem) => {
@@ -475,7 +479,8 @@ export function TranscribePage() {
                       <button
                         type="button"
                         onClick={() => startItem(item)}
-                        className="rounded-xl bg-ai px-4 py-2 text-xs font-extrabold text-warm hover:bg-ai-light focus-visible:ring-2 focus-visible:ring-coral/50"
+                        disabled={anyProcessing}
+                        className="rounded-xl bg-ai px-4 py-2 text-xs font-extrabold text-warm hover:bg-ai-light disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-coral/50"
                       >
                         {t('step3.start')}
                       </button>
