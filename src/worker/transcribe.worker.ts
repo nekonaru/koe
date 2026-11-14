@@ -29,7 +29,9 @@ import { KoeError, toKoeError } from '../lib/errors'
 // Small still downloads from Hugging Face on demand. Local models are tried
 // first; missing files fall back to the remote repo automatically.
 env.allowLocalModels = true
-env.localModelPath = '/models/'
+// Serve assets relative to the app base so the project works on GitHub Pages
+// (which hosts project sites under /koe/).
+env.localModelPath = `${import.meta.env.BASE_URL}models/`
 env.allowRemoteModels = true
 env.useBrowserCache = true
 // The WASM factory cannot be imported from a blob URL in Chromium, which is
@@ -41,12 +43,15 @@ env.useWasmCache = false
 // env.backends.onnx.wasm is a shallow copy reference to ONNX Runtime's own
 // env object, so mutate it in place. Replacing it would leave ONNX Runtime
 // without wasmPaths, and it would fall back to the jsdelivr CDN.
-const onnxBackend = env.backends.onnx as { wasm?: Record<string, unknown> }
-if (onnxBackend.wasm) {
-  Object.assign(onnxBackend.wasm, {
+// Assets are served from the app base (for example /koe/ on GitHub Pages), so
+// build absolute URLs from the worker's own origin.
+const assetBase = `${self.location.origin}${import.meta.env.BASE_URL}ort/`
+const currentOrt = env.backends.onnx as { wasm?: Record<string, unknown> } | undefined
+if (currentOrt?.wasm) {
+  Object.assign(currentOrt.wasm, {
     wasmPaths: {
-      mjs: '/ort/ort-wasm-simd-threaded.mjs',
-      wasm: '/ort/ort-wasm-simd-threaded.wasm',
+      mjs: `${assetBase}ort-wasm-simd-threaded.mjs`,
+      wasm: `${assetBase}ort-wasm-simd-threaded.wasm`,
     },
   })
 }

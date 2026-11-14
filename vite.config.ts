@@ -4,6 +4,7 @@ import { defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: process.env.GH_PAGES === 'true' ? '/koe/' : '/',
   plugins: [react(), tailwindcss()],
   worker: {
     format: 'es',
