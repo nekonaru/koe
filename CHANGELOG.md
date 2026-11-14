@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.1.1
+
+Bug fixes for concurrent queue runs and clearer load error messaging.
+
+### Bug fixes
+
+- **Queue desync on rapid starts.** Fixed clicking several Start buttons in quick succession leaving the queue permanently stuck; only one transcription is in flight at a time and Start buttons disable while another is running.
+- **Load error wording.** The model failure message now says the model could not be loaded instead of implying a network download problem.
+
 ## v1.1.0
 
 Free, unlimited, private transcription of audio and video to text in your browser, now with Tiny and Base bundled so it works offline from the very first page.
