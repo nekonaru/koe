@@ -69,6 +69,7 @@ export function ModelManager() {
       <ul className="mt-3 divide-y divide-ai/10 dark:divide-warm/10">
         {MODELS.map((model) => {
           const cached = status?.find((entry) => entry.id === model.id)?.cached
+          const bundled = model.bundled
           return (
             <li key={model.id} className="flex items-center justify-between gap-3 py-2">
               <div>
@@ -79,10 +80,16 @@ export function ModelManager() {
                   </span>
                 </p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {status === null ? t('models.checking') : cached ? t('models.cached') : t('models.notCached')}
+                  {bundled
+                    ? t('models.included')
+                    : status === null
+                      ? t('models.checking')
+                      : cached
+                        ? t('models.cached')
+                        : t('models.notCached')}
                 </p>
               </div>
-              {cached && (
+              {cached && !bundled && (
                 <button
                   type="button"
                   onClick={() => void remove(model.id)}
