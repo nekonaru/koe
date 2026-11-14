@@ -3,8 +3,11 @@
 // (via Transformers.js), not by this worker. No requests leave the origin
 // except the ones the page itself makes (site assets and model downloads
 // explicitly initiated by the user).
+// Resolve the app base from the service worker's own scope so the app works
+// both at / (custom domain or Cloudflare Pages) and /koe/ (GitHub Pages).
+const BASE = new URL(self.registration.scope).pathname
 const CACHE_NAME = 'koe-shell-v2'
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg']
+const APP_SHELL = [BASE, BASE + 'index.html', BASE + 'manifest.webmanifest', BASE + 'icon.svg']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -28,7 +31,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   // Never intercept model downloads or cross-origin requests.
   if (url.origin !== self.location.origin) return
-  if (url.pathname.startsWith('/ort/')) {
+  if (url.pathname.startsWith(BASE + 'ort/')) {
     // ONNX Runtime WASM binaries are immutable; serve from cache when present.
     event.respondWith(
       caches.match(request).then((cached) => cached ?? fetch(request).then((response) => {
@@ -49,11 +52,11 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           if (response.ok) {
             const clone = response.clone()
-            caches.open(CACHE_NAME).then((cache) => cache.put('/index.html', clone))
+            caches.open(CACHE_NAME).then((cache) => cache.put(BASE + 'index.html', clone))
           }
           return response
         })
-        .catch(() => caches.match('/index.html').then((cached) => cached ?? Response.error())),
+        .catch(() => caches.match(BASE + 'index.html').then((cached) => cached ?? Response.error())),
     )
     return
   }
