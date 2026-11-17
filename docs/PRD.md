@@ -241,6 +241,15 @@ whisper.cpp berlisensi MIT dan bobot model Whisper dirilis OpenAI dengan lisensi
 6. Perlu dukungan iOS Safari di v1 atau cukup setelah v1?
 7. Domain: perlu dicek ketersediaan (misalnya koe.app, koe.id, atau varian lain)?
 
+## Bagian 17: Catatan Implementasi v1.7.0
+
+Dieksekusi pada 2026-11-18.
+
+- **Ekspor halaman viewer mandiri.** `toStandaloneHtml` membangun HTML offline dengan audio asli tertanam sebagai WAV data URI (di-encode dari PCM di memori dengan `encodeWav`). Tanpa dependency; diklik di dalamnya, segmen tersorot dan audio melompat.
+- **Geser timestamp.** Tombol -1s/+1s memetakan offset ke semua segmen item itu; nilai boleh negatif (di-clamp di ekspor dan playback).
+- **Install PWA.** Header mendengarkan `beforeinstallprompt` dan menampilkan tombol Install bila tersedia.
+- **Tema tri-state.** `light` | `dark` | `system`; di kondisi `system`, kelas `dark` mengikuti `prefers-color-scheme` dan merespons perubahan.
+
 ## Bagian 18: Catatan Implementasi v1.6.0
 
 Dieksekusi pada 2026-11-15.

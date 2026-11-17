@@ -2,6 +2,17 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.7.0
+
+Update besar untuk pengguna: ekspor viewer mandiri, geser timestamp, pasang koe sebagai PWA, dan pilih tema terang, gelap, atau ikut sistem.
+
+### Fitur baru
+
+- **Ekspor halaman viewer mandiri.** Halaman HTML self-contained dengan transkrip dan audio asli tertanam sebagai data URI. Buka offline di browser mana pun; tanpa dependency.
+- **Geser timestamp.** Tombol untuk menggeser seluruh timestamp maju atau mundur 1 detik; berguna untuk rekaman yang mulai sebelum bagian yang ditranskripsi.
+- **Pasang sebagai PWA.** Saat browser menawarkan, tombol Install muncul di header.
+- **Tema: terang, gelap, atau sistem.** Tombol tiga posisi dengan label yang ramah keyboard.
+
 ## v1.6.0
 
 Pembaruan iteraktif besar: waveform visual dengan klik-untuk-seek, tempel dari clipboard, transkripsi ulang dengan pengaturan sekarang, dan laju kata per menit.

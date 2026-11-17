@@ -73,6 +73,8 @@
 | **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip |
 | **Waveform dengan seek** | Waveform kanvas dengan isi progress; klik di mana pun untuk melompat |
 | **Sinkron pemutaran** | Dengarkan audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat |
+| **Ekspor halaman viewer mandiri** | Halaman HTML self-contained dengan transkrip dan audio tertanam; buka offline di mana saja |
+| **Geser timestamp** | Geser seluruh timestamp maju atau mundur 1 detik, berguna untuk rekaman dengan intro |
 | **Pencarian di transkrip** | Saring kecocokan, redupkan baris non-cocok, lompat ke hasil pertama |
 | **Edit langsung** | Edit segmen mana pun langsung di daftar; ekspor mengikuti tulisan kamu |
 | **Statistik kata dan segmen** | Footer hasil menampilkan jumlah kata dan segmen |
@@ -96,7 +98,7 @@
 | Fitur | Deskripsi |
 |-------|-----------|
 | **Inggris dan Indonesia** | Seluruh UI dalam dua bahasa, tersimpan antar sesi |
-| **Tema terang dan gelap** | Tombol di header; mengikuti pilihan kamu, bukan sistem |
+| **Tema terang, gelap, dan sistem** | Tombol tiga posisi di header; ikut pilihan kamu atau sistem |
 | **PWA yang bisa dipasang** | Tambahkan koe ke layar utama atau peluncur aplikasi |
 
 ### Privasi
@@ -233,7 +235,7 @@ Dev server mencetak URL lokalnya (biasanya `http://localhost:5173`). Perubahan d
 - Batalkan transkripsi yang sedang berjalan kapan pun dan mulai ulang
 - Hapus model tersimpan dari pengelola model saat ruang penyimpanan hampir habis
 - Ganti bahasa dengan tombol **ID / EN** di header; pilihan tersimpan
-- Ganti tema terang dan gelap di header
+- Ganti tema terang, gelap, dan sistem di header; pilihan tersimpan
 
 ---
 

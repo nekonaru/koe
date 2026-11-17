@@ -59,7 +59,8 @@
                   "empty":  "The transcript will appear here, segment by segment.",
                   "processing":  "Transcribing",
                   "windowProgress":  "Window {current} of {total}",
-                  "rerun":  "Re-transcribe"
+                  "rerun":  "Re-transcribe",
+                  "exportView":  "View page"
               },
     "queue":  {
                   "title":  "File queue",
@@ -136,7 +137,9 @@
                    "loading":  "Loading",
                    "themeLight":  "Switch to light theme",
                    "themeDark":  "Switch to dark theme",
-                   "language":  "Language"
+                   "language":  "Language",
+                   "themeSystem":  "Follow system theme",
+                   "install":  "Install koe"
                },
     "guide":  {
                   "title":  "How koe works",
@@ -196,6 +199,8 @@
                     "resume":  "Resume",
                     "emptyTranscript":  "No speech detected.",
                     "waveformSeek":  "Seek anywhere in the waveform",
-                    "wpm":  "{wpm} words per minute"
+                    "wpm":  "{wpm} words per minute",
+                    "shiftBack":  "Shift timestamps earlier by 1 second",
+                    "shiftForward":  "Shift timestamps later by 1 second"
                 }
 }
