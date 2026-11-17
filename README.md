@@ -71,10 +71,14 @@
 | **Structured data** | JSON with per-segment start and end timestamps in milliseconds |
 | **Copy and download** | One click to clipboard, or save the chosen format per file |
 | **ZIP export** | Download every finished transcript in one archive |
+| **Waveform with seek** | Canvas waveform with progress fill; click anywhere to jump the player |
 | **Playback sync** | Listen to the audio with the current segment highlighted; click any timestamp to jump |
 | **Search in transcripts** | Filter matches, dim non-matches, jump to the first hits |
 | **Inline editing** | Edit any segment directly in the list; exports reflect your edits |
 | **Word and segment stats** | Result footer shows word and segment counts |
+| **Words per minute** | Footer shows words per minute for the whole transcript |
+| **Re-transcribe** | Re-run with current settings; reuses in-memory PCM, no re-decode |
+| **Paste from clipboard** | Ctrl+V anywhere on the page to add audio or video files |
 
 ### Models
 
@@ -214,7 +218,7 @@ The dev server prints the local URL (usually `http://localhost:5173`). Edits to 
 
 ### First launch
 
-1. Drop an audio or video file onto the drop zone, or click it to browse
+1. Drop an audio or video file onto the drop zone, or click it to browse, or press Ctrl+V anywhere on the page
 2. Wait for the transcript queue to show the file as ready (duration appears)
 3. Choose a language (default **Indonesian**) and a model (default **Tiny**, bundled with koe)
 4. Click **Start transcription** and watch the segments stream in

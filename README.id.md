@@ -71,10 +71,14 @@
 | **Data terstruktur** | JSON dengan timestamp mulai dan selesai per segmen dalam milidetik |
 | **Salin dan unduh** | Satu klik ke clipboard, atau simpan format pilihan per file |
 | **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip |
+| **Waveform dengan seek** | Waveform kanvas dengan isi progress; klik di mana pun untuk melompat |
 | **Sinkron pemutaran** | Dengarkan audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat |
 | **Pencarian di transkrip** | Saring kecocokan, redupkan baris non-cocok, lompat ke hasil pertama |
 | **Edit langsung** | Edit segmen mana pun langsung di daftar; ekspor mengikuti tulisan kamu |
 | **Statistik kata dan segmen** | Footer hasil menampilkan jumlah kata dan segmen |
+| **Kata per menit** | Footer menampilkan kata per menit untuk seluruh transkrip |
+| **Ulangi transkripsi** | Ulangi dengan pengaturan sekarang; memakai PCM di memori, tanpa dekode ulang |
+| **Tempel dari clipboard** | Ctrl+V di mana pun di halaman untuk menambahkan file audio atau video |
 
 ### Model
 
@@ -214,7 +218,7 @@ Dev server mencetak URL lokalnya (biasanya `http://localhost:5173`). Perubahan d
 
 ### Peluncuran pertama
 
-1. Lepas file audio atau video ke drop zone, atau klik untuk memilih
+1. Lepas file audio atau video ke drop zone, atau klik untuk memilih, atau tekan Ctrl+V di mana pun di halaman
 2. Tunggu sampai antrean menampilkan file siap (durasi muncul)
 3. Pilih bahasa (default **Indonesia**) dan model (default **Tiny**)
 4. Klik **Mulai transkripsi** dan lihat segmen muncul bertahap

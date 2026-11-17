@@ -43,6 +43,105 @@ function countWords(segments: readonly TranscriptSegment[]): number {
   }, 0)
 }
 
+const PEAK_BUCKETS = 200
+
+/** A compact canvas waveform that doubles as a seek bar and progress display. */
+function Waveform({ getPcm, playheadMs, onSeek, canPlay, t }: {
+  getPcm: () => Float32Array | null
+  playheadMs: number
+  onSeek: (ms: number) => void
+  canPlay: boolean
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx2d = canvas.getContext('2d')
+    if (!ctx2d) return
+    const pcm = getPcm()
+    const dark = document.documentElement.classList.contains('dark')
+
+    const W = canvas.width
+    const H = canvas.height
+    ctx2d.clearRect(0, 0, W, H)
+
+    // Bar baseline and colors
+    ctx2d.fillStyle = dark ? 'rgba(250,247,242,0.08)' : 'rgba(43,58,103,0.08)'
+    ctx2d.fillRect(0, H / 2 - 1, W, 2)
+    const base = dark ? 'rgba(250,247,242,0.55)' : '#2B3A67'
+    const accent = '#FF7A59'
+
+    const durationMs = pcm ? (pcm.length / SAMPLE_RATE) * 1000 : 0
+    const progressFraction = durationMs > 0 ? Math.min(1, playheadMs / durationMs) : 0
+
+    // Precompute peaks
+    const peaks: Array<{ min: number; max: number }> = []
+    if (pcm) {
+      const samplesPerBucket = Math.max(1, Math.floor(pcm.length / PEAK_BUCKETS))
+      for (let i = 0; i < PEAK_BUCKETS; i += 1) {
+        const start = i * samplesPerBucket
+        const end = Math.min(pcm.length, start + samplesPerBucket)
+        let min = 1
+        let max = -1
+        for (let j = start; j < end; j += 1) {
+          const v = pcm[j]
+          if (v < min) min = v
+          if (v > max) max = v
+        }
+        if (min === 1 && max === -1) { min = 0; max = 0 }
+        peaks.push({ min, max })
+      }
+    }
+
+    const bucketWidth = W / PEAK_BUCKETS
+    for (let i = 0; i < PEAK_BUCKETS; i += 1) {
+      const { min, max } = peaks[i]
+      const top = H / 2 - Math.max(Math.abs(max), Math.abs(min)) * (H / 2 - 2)
+      const bottom = H / 2 + Math.max(Math.abs(max), Math.abs(min)) * (H / 2 - 2)
+      const x = i * bucketWidth + 1
+      const highlight = i < progressFraction * PEAK_BUCKETS
+      ctx2d.fillStyle = highlight ? accent : base
+      ctx2d.fillRect(x, top, Math.max(1, bucketWidth - 2), Math.max(2, bottom - top))
+    }
+
+    // Playhead marker
+    const px = progressFraction * W
+    ctx2d.fillStyle = accent
+    ctx2d.fillRect(px - 1, 0, 2, H)
+  }, [getPcm, playheadMs])
+
+  const handleSeek = useCallback(
+    (event: React.MouseEvent<HTMLCanvasElement>) => {
+      const canvas = canvasRef.current
+      const pcm = getPcm()
+      if (!canvas || !pcm) return
+      const rect = canvas.getBoundingClientRect()
+      const fraction = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width))
+      const durationMs = (pcm.length / SAMPLE_RATE) * 1000
+      onSeek(fraction * durationMs)
+    },
+    [getPcm, onSeek],
+  )
+
+  return (
+    <div className="border-b border-ai/10 bg-ai/5 px-2 py-2 dark:border-warm/10 dark:bg-warm/5">
+      <canvas
+        ref={canvasRef}
+        width={640}
+        height={56}
+        className="h-14 w-full cursor-crosshair rounded-lg"
+        onClick={handleSeek}
+        role="button"
+        aria-label={t('results.waveformSeek')}
+        aria-disabled={!canPlay}
+        tabIndex={canPlay ? 0 : -1}
+      />
+    </div>
+  )
+}
+
 export function TranscriptView({ getPcm, canPlay, segments, onEditSegment }: TranscriptViewProps) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
@@ -184,6 +283,10 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment }: Tra
 
   const words = countWords(segments)
 
+  // Footer: words per minute computed from the last segment end.
+  const lastEndMs = segments.length > 0 ? segments[segments.length - 1].endMs : 0
+  const wpm = lastEndMs > 0 ? Math.round((words / lastEndMs) * 60000) : 0
+
   return (
     <div className="flex max-h-80 flex-col">
       {/* Toolbar */}
@@ -227,6 +330,11 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment }: Tra
           </button>
         )}
       </div>
+
+      {/* Waveform with seek */}
+      {canPlay && (
+        <Waveform getPcm={getPcm} playheadMs={playheadMs} onSeek={seekTo} canPlay={canPlay} t={t} />
+      )}
 
       {/* Segments */}
       <div ref={listRef} className="overflow-auto bg-white px-2 py-2 dark:bg-[#191D29]">
@@ -295,7 +403,7 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment }: Tra
 
       {/* Footer stats */}
       <div className="flex items-center justify-between gap-2 border-t border-ai/10 px-4 py-1.5 text-[10px] font-semibold text-neutral-500 dark:border-warm/10 dark:text-neutral-400">
-        <span>{t('results.stats', { words, segments: segments.length })}</span>
+        <span>{t('results.stats', { words, segments: segments.length })}{wpm > 0 && ` · ${t('results.wpm', { wpm })}`}</span>
         <span>{t('results.editHint')}</span>
       </div>
     </div>

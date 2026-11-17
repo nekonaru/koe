@@ -241,7 +241,25 @@ whisper.cpp berlisensi MIT dan bobot model Whisper dirilis OpenAI dengan lisensi
 6. Perlu dukungan iOS Safari di v1 atau cukup setelah v1?
 7. Domain: perlu dicek ketersediaan (misalnya koe.app, koe.id, atau varian lain)?
 
-## Bagian 18: Catatan Implementasi v1.1.0
+## Bagian 18: Catatan Implementasi v1.6.0
+
+Dieksekusi pada 2026-11-15.
+
+- **Waveform mengklik-untuk-seek.** Kanvas waveform di atas transkrip menggambar puncak absolut terendah/tertinggi per 200 bucket; progres diwarnai coral; klik mengeset posisi pemutaran.
+- **Tempel dari clipboard.** `window.addEventListener('paste')` memanggil `addFiles` untuk file di `clipboardData`.
+- **Ulangi transkripsi.** `startItem` menerima status `done`; pengaturan dicetak ulang memakai PCM di memori, tanpa dekode ulang.
+- **Kata per menit.** Dihitung dari `lastEndMs / 60000`.
+- **Konsistensi internal.** `pendingInitModelRef` melacak model yang sedang dimuat supaya status `ready` tidak salah tempel ke model yang sedang dipilih; cancel yang tiba sebelum transkripsi berikutnya tidak lagi membatalkan transkripsi mendatang secara diam-diam.
+
+## Bagian 18 (lama): Catatan Implementasi v1.5.0
+
+Dieksekusi pada 2026-11-14.
+
+- **Pemutar sinkron dengan sorot segmen.** Klik pada timestamp menelusuri konteks audio; tombol Dengarkan memainkan PCM 16 kHz yang sudah didekode; segmen aktif disorot. Tombol Play meminta resume AudioContext (di luar gesture tidak dijamin).
+- **Segmen dapat diubah teksnya.** Klik pada segmen untuk masuk mode sunting; value textarea langsung menulis ke state segmen sehingga ekspor mengikuti.
+- **Pencarian.** Filter baris dengan dimming non-matching.
+- **Inline editing + statistik kata/segmen** hanya per item selesai. Aliran instalasi kembali: tidak ada berubah secara arsitektur.
+- **Pemulihan dekode.** `startItem` status `error` dengan `decodeFailed` mendekode ulang file asli dari `fileStoreRef`.
 
 Dieksekusi pada 2026-11-14.
 

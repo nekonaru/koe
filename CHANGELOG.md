@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.6.0
+
+Big interactive update: visual waveform with click-to-seek, paste-from-clipboard input, re-transcribing with the current settings, and a words-per-minute readout.
+
+### New features
+
+- **Waveform with seek.** A canvas waveform renders above the transcript; click anywhere to jump the player to that position and see the playhead color fill.
+- **Paste from the clipboard.** Press Ctrl+V anywhere on the page to drop in audio or video files (for example right after copying a recording).
+- **Re-transcribe.** A finished file can be transcribed again with the current language and model without decoding again.
+- **Words per minute.** The result footer now shows words, segments, and words per minute.
+
 ## v1.5.0
 
 A much richer transcript experience: play along with the audio, search, edit in place, and better recovery from decode failures.
