@@ -8,18 +8,45 @@ import { AboutPage } from './pages/AboutPage'
 import { HelpPage } from './pages/HelpPage'
 
 type Page = 'transcribe' | 'about' | 'help'
-type Theme = 'light' | 'dark'
+type Theme = 'light' | 'dark' | 'system'
+const THEME_STORAGE_KEY = 'koe-theme-v2'
 
 function getInitialTheme(): Theme {
   try {
-    const stored = localStorage.getItem('koe-theme')
-    if (stored === 'light' || stored === 'dark') return stored
+    const stored = localStorage.getItem(THEME_STORAGE_KEY)
+    if (stored === 'light' || stored === 'dark' || stored === 'system') return stored
   } catch {
-    // localStorage unavailable; fall through to system preference
+    // localStorage unavailable; fall through
   }
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return 'system'
 }
 
+function resolveTheme(theme: Theme): 'light' | 'dark' {
+  if (theme === 'system') {
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  }
+  return theme
+}
+
+function ThemeIcon({ theme }: { theme: Theme }) {
+  if (theme === 'light') return <SunIcon />
+  if (theme === 'dark') return <MoonIcon />
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="2.5" y="4" width="19" height="13" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M8.5 21h7M12 17v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function InstallIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 3v12M7 11l5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 20h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
 function SunIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -49,15 +76,34 @@ function Shell() {
   const { t, locale, setLocale } = useI18n()
   const [page, setPage] = useState<Page>('transcribe')
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const [installPrompt, setInstallPrompt] = useState<(Event & { prompt: () => Promise<void> }) | null>(null)
 
+  // Track the system theme while the user selected "system".
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)')
+    const apply = () => {
+      document.documentElement.classList.toggle('dark', resolveTheme(theme) === 'dark')
+    }
+    apply()
     try {
-      localStorage.setItem('koe-theme', theme)
+      localStorage.setItem(THEME_STORAGE_KEY, theme)
     } catch {
       // persist best effort only
     }
+    if (theme === 'system' && media) {
+      media.addEventListener('change', apply)
+      return () => media.removeEventListener('change', apply)
+    }
   }, [theme])
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      event.preventDefault()
+      setInstallPrompt(event as Event & { prompt: () => Promise<void> })
+    }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
 
   const navItems: Array<{ id: Page; label: string }> = [
     { id: 'transcribe', label: t('app.nav.transcribe') },
@@ -66,6 +112,7 @@ function Shell() {
   ]
 
   const toggleLanguage = () => setLocale((locale === 'en' ? 'id' : 'en') as Locale)
+  const cycleTheme = () => setTheme((current) => (current === 'light' ? 'dark' : current === 'dark' ? 'system' : 'light'))
 
   return (
     <div className="flex min-h-screen flex-col bg-warm text-neutral-800 dark:bg-ink dark:text-warm">
@@ -101,6 +148,20 @@ function Shell() {
           </nav>
 
           <div className="flex items-center gap-1.5">
+            {installPrompt && (
+              <button
+                type="button"
+                onClick={() => {
+                  void installPrompt.prompt()
+                  setInstallPrompt(null)
+                }}
+                className="flex items-center gap-1.5 rounded-xl bg-coral px-3 py-2 text-xs font-extrabold text-[#1A1207] outline-none hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ai/50"
+                aria-label={t('common.install')}
+              >
+                <InstallIcon />
+                <span className="hidden sm:inline">{t('common.install')}</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={toggleLanguage}
@@ -111,11 +172,15 @@ function Shell() {
             </button>
             <button
               type="button"
-              onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
-              className="rounded-xl p-2 text-ai outline-none hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:text-warm dark:hover:bg-warm/10"
-              aria-label={theme === 'dark' ? t('common.themeLight') : t('common.themeDark')}
+              onClick={cycleTheme}
+              className="flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-ai outline-none hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:text-warm dark:hover:bg-warm/10"
+              aria-label={theme === 'light' ? t('common.themeDark') : theme === 'dark' ? t('common.themeSystem') : t('common.themeLight')}
+              title={theme === 'light' ? t('common.themeDark') : theme === 'dark' ? t('common.themeSystem') : t('common.themeLight')}
             >
-              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+              <ThemeIcon theme={theme} />
+              <span className="hidden text-[10px] font-black uppercase text-neutral-500 dark:text-neutral-400 md:inline">
+                {theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto'}
+              </span>
             </button>
             <a
               href="https://github.com/nekonaru/koe"

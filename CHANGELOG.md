@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented in this file.
 
+## v1.7.0
+
+Big user-facing update: export a standalone transcript viewer, shift timestamps, install koe as a PWA, and pick light, dark or system mode.
+
+### New features
+
+- **Standalone viewer export.** A self-contained HTML page with the transcript and the original audio embedded as a data URI. Open it offline in any browser; no dependencies.
+- **Timestamp shift.** Buttons to shift every segment earlier or later by 1 second; useful for recordings that began before the section you transcribed.
+- **Install as a PWA.** When the browser offers it, an Install button appears in the header.
+- **Theme: light, dark or system.** Three-way toggle with a keyboard-friendly label.
+
 ## v1.6.0
 
 Big interactive update: visual waveform with click-to-seek, paste-from-clipboard input, re-transcribing with the current settings, and a words-per-minute readout.

@@ -59,7 +59,8 @@
                   "empty":  "Transkrip akan muncul di sini, segmen demi segmen.",
                   "processing":  "Memproses",
                   "windowProgress":  "Potongan {current} dari {total}",
-                  "rerun":  "Ulangi transkripsi"
+                  "rerun":  "Ulangi transkripsi",
+                  "exportView":  "Halaman tampilan"
               },
     "queue":  {
                   "title":  "Antrean file",
@@ -136,7 +137,9 @@
                    "loading":  "Memuat",
                    "themeLight":  "Ganti ke tema terang",
                    "themeDark":  "Ganti ke tema gelap",
-                   "language":  "Bahasa"
+                   "language":  "Bahasa",
+                   "themeSystem":  "Ikuti tema sistem",
+                   "install":  "Pasang koe"
                },
     "guide":  {
                   "title":  "Cara kerja koe",
@@ -196,6 +199,8 @@
                     "resume":  "Lanjut",
                     "emptyTranscript":  "Tidak ada ucapan yang terdeteksi.",
                     "waveformSeek":  "Lompat ke posisi mana pun di waveform",
-                    "wpm":  "{wpm} kata per menit"
+                    "wpm":  "{wpm} kata per menit",
+                    "shiftBack":  "Mundurkan timestamp 1 detik",
+                    "shiftForward":  "Majukan timestamp 1 detik"
                 }
 }

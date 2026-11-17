@@ -13,10 +13,12 @@ import {
   OUTPUT_FORMATS,
   formatTranscript,
   outputFileName,
+  toStandaloneHtml,
   MIME_TYPES,
   type OutputFormat,
   type TranscriptSegment,
 } from '../format/format'
+import { encodeWav, bytesToBase64 } from '../audio/wav'
 
 type ItemStatus = 'decoding' | 'ready' | 'processing' | 'done' | 'error'
 
@@ -54,7 +56,7 @@ function newId(): string {
 }
 
 export function TranscribePage() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const supported = typeof WebAssembly === 'object'
   const crossOriginIsolated = typeof globalThis.crossOriginIsolated !== 'undefined' && globalThis.crossOriginIsolated
   const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
@@ -442,6 +444,27 @@ export function TranscribePage() {
     [outputFormat],
   )
 
+  const exportStandalone = useCallback(
+    (item: QueueItem) => {
+      const pcm = pcmStoreRef.current.get(item.id)
+      if (!pcm) return
+      const audioDataUri = `data:audio/wav;base64,${bytesToBase64(encodeWav(pcm, 16000))}`
+      const html = toStandaloneHtml(item.segments, {
+        title: item.name,
+        audioDataUri,
+        lang: locale === 'id' ? 'id' : 'en',
+      })
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = outputFileName(item.name, 'txt').replace(/\.txt$/, '.view.html')
+      anchor.click()
+      URL.revokeObjectURL(url)
+    },
+    [locale],
+  )
+
   const downloadTranscript = useCallback((item: QueueItem) => {
     const text = formatTranscript(item.segments, outputFormat)
     const blob = new Blob([text], { type: MIME_TYPES[outputFormat] })
@@ -781,6 +804,14 @@ export function TranscribePage() {
                     </button>
                     <button
                       type="button"
+                      onClick={() => exportStandalone(item)}
+                      disabled={!pcmIds.has(item.id)}
+                      className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20 dark:text-warm"
+                    >
+                      {t('step3.exportView')}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => void copyTranscript(item)}
                       className="rounded-lg px-3 py-1.5 text-xs font-bold text-ai hover:bg-ai/10 focus-visible:ring-2 focus-visible:ring-coral/50 dark:text-warm"
                     >
@@ -799,6 +830,22 @@ export function TranscribePage() {
                   canPlay={pcmIds.has(item.id)}
                   getPcm={() => pcmStoreRef.current.get(item.id) ?? null}
                   segments={item.segments}
+                  onShiftSegments={(offsetMs) =>
+                    setItems((current) =>
+                      current.map((entry) =>
+                        entry.id === item.id
+                          ? {
+                              ...entry,
+                              segments: entry.segments.map((segment) => ({
+                                ...segment,
+                                startMs: segment.startMs + offsetMs,
+                                endMs: segment.endMs + offsetMs,
+                              })),
+                            }
+                          : entry,
+                      ),
+                    )
+                  }
                   onEditSegment={(index, text) =>
                     setItems((current) =>
                       current.map((entry) =>

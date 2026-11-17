@@ -73,6 +73,8 @@
 | **ZIP export** | Download every finished transcript in one archive |
 | **Waveform with seek** | Canvas waveform with progress fill; click anywhere to jump the player |
 | **Playback sync** | Listen to the audio with the current segment highlighted; click any timestamp to jump |
+| **Standalone viewer export** | Self-contained HTML page with the transcript and the embedded audio; open it offline anywhere |
+| **Timestamp shift** | Shift every timestamp earlier or later by 1 second, handy for recordings with an intro |
 | **Search in transcripts** | Filter matches, dim non-matches, jump to the first hits |
 | **Inline editing** | Edit any segment directly in the list; exports reflect your edits |
 | **Word and segment stats** | Result footer shows word and segment counts |
@@ -96,7 +98,7 @@
 | Feature | Description |
 |---------|-------------|
 | **English and Indonesian** | Full UI in both languages, remembered between sessions |
-| **Light and dark themes** | Toggle in the header; follows your choice, not the system |
+| **Light, dark, and system themes** | Three-way toggle in the header; follows your choice or the system |
 | **Installable PWA** | Add koe to your home screen or app launcher |
 
 ### Privacy
@@ -233,7 +235,7 @@ The dev server prints the local URL (usually `http://localhost:5173`). Edits to 
 - Cancel a running transcription at any time and start over
 - Delete stored models from the model manager when you run low on space
 - Switch languages with the **ID / EN** toggle in the header; the choice is remembered
-- Toggle light and dark themes in the header
+- Toggle light, dark, and system themes in the header; the choice is remembered
 
 ---
 

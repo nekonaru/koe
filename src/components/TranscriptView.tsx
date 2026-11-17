@@ -10,6 +10,8 @@ interface TranscriptViewProps {
   canPlay: boolean
   segments: TranscriptSegment[]
   onEditSegment: (index: number, text: string) => void
+  /** Shift every segment's timestamps by offsetMs */
+  onShiftSegments: (offsetMs: number) => void
 }
 
 function formatTime(ms: number): string {
@@ -74,7 +76,8 @@ function Waveform({ getPcm, playheadMs, onSeek, canPlay, t }: {
     const accent = '#FF7A59'
 
     const durationMs = pcm ? (pcm.length / SAMPLE_RATE) * 1000 : 0
-    const progressFraction = durationMs > 0 ? Math.min(1, playheadMs / durationMs) : 0
+    const progressFraction =
+      durationMs > 0 ? Math.min(1, Math.max(0, playheadMs / durationMs)) : 0
 
     // Precompute peaks
     const peaks: Array<{ min: number; max: number }> = []
@@ -142,7 +145,7 @@ function Waveform({ getPcm, playheadMs, onSeek, canPlay, t }: {
   )
 }
 
-export function TranscriptView({ getPcm, canPlay, segments, onEditSegment }: TranscriptViewProps) {
+export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShiftSegments }: TranscriptViewProps) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [playState, setPlayState] = useState<'stopped' | 'playing' | 'paused'>('stopped')
@@ -402,9 +405,32 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment }: Tra
       </div>
 
       {/* Footer stats */}
-      <div className="flex items-center justify-between gap-2 border-t border-ai/10 px-4 py-1.5 text-[10px] font-semibold text-neutral-500 dark:border-warm/10 dark:text-neutral-400">
-        <span>{t('results.stats', { words, segments: segments.length })}{wpm > 0 && ` · ${t('results.wpm', { wpm })}`}</span>
-        <span>{t('results.editHint')}</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ai/10 px-4 py-1.5 text-[10px] font-semibold text-neutral-500 dark:border-warm/10 dark:text-neutral-400">
+        <span>
+          {t('results.stats', { words, segments: segments.length })}
+          {wpm > 0 && ` · ${t('results.wpm', { wpm })}`}
+        </span>
+        <span className="flex items-center gap-2">
+          <span aria-hidden="true">{t('results.editHint')}</span>
+          <button
+            type="button"
+            onClick={() => onShiftSegments(-1000)}
+            aria-label={t('results.shiftBack')}
+            title={t('results.shiftBack')}
+            className="rounded border border-ai/20 px-1.5 py-0.5 text-[10px] font-bold hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20"
+          >
+            -1s
+          </button>
+          <button
+            type="button"
+            onClick={() => onShiftSegments(1000)}
+            aria-label={t('results.shiftForward')}
+            title={t('results.shiftForward')}
+            className="rounded border border-ai/20 px-1.5 py-0.5 text-[10px] font-bold hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20"
+          >
+            +1s
+          </button>
+        </span>
       </div>
     </div>
   )
