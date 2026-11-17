@@ -222,6 +222,9 @@ workerScope.onmessage = (event: MessageEvent<ToWorker>) => {
     return
   }
   if (message.type === 'transcribe') {
+    // Any cancel that arrived before this point is stale; do not honor it for
+    // the new transcription, or the user would see an instant phantom abort.
+    cancelRequested = false
     handleTranscribe(message.pcm, message.modelId, message.language, message.task).catch(reportError)
   }
 }

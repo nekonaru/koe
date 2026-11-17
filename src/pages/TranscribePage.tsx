@@ -76,6 +76,7 @@ export function TranscribePage() {
   const filePercentsRef = useRef(new Map<string, number>())
   const activeIdRef = useRef<string | null>(null)
   const pendingAfterReadyRef = useRef<string | null>(null)
+  const pendingInitModelRef = useRef<ModelId | null>(null)
   const chainRef = useRef(false)
   const itemsRef = useRef(items)
   const modelRef = useRef(model)
@@ -103,7 +104,9 @@ export function TranscribePage() {
           break
         }
         case 'ready': {
-          setModelReady((current) => ({ ...current, [modelRef.current]: true }))
+          const inited = pendingInitModelRef.current ?? modelRef.current
+          pendingInitModelRef.current = null
+          setModelReady((current) => ({ ...current, [inited]: true }))
           setDownload(idleDownload)
           filePercentsRef.current.clear()
           const pending = pendingAfterReadyRef.current
@@ -155,6 +158,17 @@ export function TranscribePage() {
             ? (message.code as KoeErrorCode)
             : 'unknown'
           if (id) {
+            if (koeCode === 'aborted') {
+              // User cancel: mark the item as ready again, no error state.
+              setItems((current) =>
+                current.map((item) =>
+                  item.id === id ? { ...item, status: 'ready', segments: [], startedAt: null, percent: 0 } : item,
+                ),
+              )
+              activeIdRef.current = null
+              chainRef.current = false
+              return
+            }
             setItems((current) =>
               current.map((item) =>
                 item.id === id ? { ...item, status: 'error', errorCode: koeCode, detail: rawDetail } : item,
@@ -164,7 +178,12 @@ export function TranscribePage() {
             chainRef.current = false
           } else {
             setDownload(idleDownload)
-            setModelReady((current) => ({ ...current, [modelRef.current]: false }))
+            const pendingInitModel = pendingInitModelRef.current
+            if (pendingInitModel) {
+              // A initModel load failed; only that model is affected.
+              pendingInitModelRef.current = null
+              setModelReady((current) => ({ ...current, [pendingInitModel]: false }))
+            }
             const pending = pendingAfterReadyRef.current
             pendingAfterReadyRef.current = null
             if (pending) {
@@ -238,6 +257,7 @@ export function TranscribePage() {
     (modelId: ModelId, pcmItemId?: string) => {
       const worker = createWorker()
       pendingAfterReadyRef.current = pcmItemId ?? null
+      pendingInitModelRef.current = modelId
       filePercentsRef.current.clear()
       setDownload({ active: true, file: '', percent: 0 })
       worker.postMessage({ type: 'init', modelId } satisfies ToWorker)
@@ -269,6 +289,11 @@ export function TranscribePage() {
       // Only one transcription may be in flight: segments and progress are
       // routed to a single active item. The rest are auto-started via the
       // queue chain.
+      // Re-running a done item with the current settings reuses the in-memory
+      // PCM, so the file is not decoded again. Segments reset first.
+      if (item.status === 'done') {
+        item = { ...item, status: 'ready', segments: [], percent: 0, window: 0, totalWindows: 0, errorCode: null, detail: null, startedAt: null }
+      }
       if ((item.status !== 'ready' && item.status !== 'error') || activeIdRef.current !== null) return
       if (item.status === 'error') {
         // Some failures happen before any PCM exists (unreadable file, unsupported
@@ -332,6 +357,19 @@ export function TranscribePage() {
     [decodeItem],
   )
 
+  // Paste files directly from the clipboard (for example right after copying
+  // a recording or a screenshot of a meeting) into the queue.
+  useEffect(() => {
+    const handler = (event: ClipboardEvent) => {
+      const files = Array.from(event.clipboardData?.files ?? [])
+      if (files.length === 0) return
+      event.preventDefault()
+      addFiles(files)
+    }
+    window.addEventListener('paste', handler)
+    return () => window.removeEventListener('paste', handler)
+  }, [addFiles])
+
   const cancelItem = useCallback((item: QueueItem) => {
     // Hard stop: terminate the worker. The model stays cached in Cache Storage,
     // so the next run reloads from local cache, not the network.
@@ -368,7 +406,7 @@ export function TranscribePage() {
     })
   }, [])
 
-  // Elapsed time ticker, only while something is running or downloading.
+  // Auto-warm bundled models once a file is added so transcription can start
   const busy = items.some((item) => item.status === 'processing' || item.status === 'decoding') || download.active
   useEffect(() => {
     if (!busy) return
@@ -733,6 +771,14 @@ export function TranscribePage() {
                 <header className="flex flex-wrap items-center justify-between gap-2 border-b border-ai/10 bg-ai/5 px-4 py-2.5 dark:border-warm/10 dark:bg-warm/5">
                   <p className="max-w-md truncate text-sm font-bold text-ai dark:text-warm">{item.name}</p>
                   <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => startItem(item)}
+                      disabled={anyProcessing}
+                      className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20 dark:text-warm"
+                    >
+                      {t('step3.rerun')}
+                    </button>
                     <button
                       type="button"
                       onClick={() => void copyTranscript(item)}

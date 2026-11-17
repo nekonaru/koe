@@ -59,6 +59,7 @@ export function Dropzone({ onFiles, disabled = false }: DropzoneProps) {
       <p className="text-lg font-bold text-ai dark:text-warm">{t('step1.drop')}</p>
       <p className="text-sm font-semibold text-coral">{t('step1.browse')}</p>
       <p className="max-w-md text-xs text-neutral-500 dark:text-neutral-400">{t('step1.formats')}</p>
+      <p className="-mt-1 text-[11px] font-semibold text-coral/80">{t('step1.pasteHint')}</p>
       <input
         ref={inputRef}
         type="file"

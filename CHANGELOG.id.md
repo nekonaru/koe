@@ -2,6 +2,17 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.6.0
+
+Pembaruan iteraktif besar: waveform visual dengan klik-untuk-seek, tempel dari clipboard, transkripsi ulang dengan pengaturan sekarang, dan laju kata per menit.
+
+### Fitur baru
+
+- **Waveform dengan seek.** Waveform kanvas tampil di atas transkrip; klik di mana pun untuk melompat ke posisi itu dan lihat isi progress membara.
+- **Tempel dari clipboard.** Tekan Ctrl+V di mana pun di halaman untuk memasukkan file audio atau video (misalnya tepat setelah menyalin rekaman).
+- **Ulangi transkripsi.** File yang sudah selesai bisa ditranskripsi ulang dengan bahasa dan model sekarang tanpa dekode lagi.
+- **Kata per menit.** Footer hasil sekarang menampilkan kata, segmen, dan kata per menit.
+
 ## v1.5.0
 
 Pengalaman transkrip jauh lebih kaya: dengarkan berbarengan dengan audio, cari, edit langsung di daftar, dan pemulihan lebih baik dari kegagalan dekode.
