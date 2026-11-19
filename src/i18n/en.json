@@ -35,7 +35,7 @@
                   "translate":  "Translate to English",
                   "modelTiny":  "Tiny - fastest, lower accuracy",
                   "modelBase":  "Base - balanced speed and accuracy (default)",
-                  "modelSmall":  "Small - most accurate, ~242 MB, needs more memory",
+                  "modelSmall":  "Small - most accurate, ~254 MB, needs more memory",
                   "downloadSize":  "Download size",
                   "dataWarning":  "You are about to download {size}. This uses your data plan. The model is stored on this device and reused offline.",
                   "memoryWarning":  "This device reports limited memory. Consider the Tiny or Base model.",
@@ -44,7 +44,10 @@
                   "ready":  "Model ready",
                   "included":  "Included in this app, no download needed",
                   "includedNote":  "Bundled with koe. Works right away, fully offline, no data used.",
-                  "loadModel":  "Load model"
+                  "loadModel":  "Load model",
+                  "displayMode":  "Subtitle style",
+                  "displayLines":  "Lines (default)",
+                  "displayKaraoke":  "Karaoke (highlight words)"
               },
     "step3":  {
                   "title":  "Result",
@@ -116,7 +119,7 @@
                  "browserTitle":  "Supported browsers",
                  "browserBody":  "Latest Chrome, Edge, Firefox, or Safari on desktop. Android Chrome works with a memory warning. iOS Safari is experimental. Multi-threading needs cross-origin isolation headers, which this site sends.",
                  "modelTitle":  "Choosing a model",
-                 "modelBody":  "Tiny is fastest and smallest. Base is a good default. Small is the most accurate of the three but downloads about 242 MB and needs more memory. When in doubt, start with Base.",
+                 "modelBody":  "Tiny is fastest and smallest. Base is a good default. Small is the most accurate of the three but downloads about 254 MB and needs more memory. When in doubt, start with Base.",
                  "memoryTitle":  "Memory and long files",
                  "memoryBody":  "Audio is decoded fully in memory, so very long files (over 30 minutes) may fail on devices with little memory. Use Tiny, close other tabs, or trim the file first.",
                  "formatTitle":  "Output formats",
@@ -126,7 +129,9 @@
                  "troubleTitle":  "Troubleshooting",
                  "troubleBody":  "Stuck or crashed? Reload the page. If the model fails to load, see the Model failed to load section. The Tiny and Base models are bundled with koe and load locally; only Small downloads. If transcription fails on a long file, try a smaller model.",
                  "recoverFailedTitle":  "The model fails to load",
-                 "recoverFailedBody":  "Click the Coba lagi button next to the error. If it keeps failing, clear site data (browser DevTools, Application, Storage, Clear site data), then reload the page. If Base still fails, try Tiny. If the Small model fails to download, check your connection and try again; partial downloads resume from the browser cache."
+                 "recoverFailedBody":  "Click the Coba lagi button next to the error. If it keeps failing, clear site data (browser DevTools, Application, Storage, Clear site data), then reload the page. If Base still fails, try Tiny. If the Small model fails to download, check your connection and try again; partial downloads resume from the browser cache.",
+                 "shortcutsTitle":  "Keyboard shortcuts",
+                 "shortcutsBody":  "Space toggles playback. / focuses the search box. Copy file from another app and press Ctrl+V anywhere on the page to add it to the queue."
              },
     "footer":  {
                    "openSource":  "Open source under MIT",
@@ -201,6 +206,7 @@
                     "waveformSeek":  "Seek anywhere in the waveform",
                     "wpm":  "{wpm} words per minute",
                     "shiftBack":  "Shift timestamps earlier by 1 second",
-                    "shiftForward":  "Shift timestamps later by 1 second"
+                    "shiftForward":  "Shift timestamps later by 1 second",
+                    "karaokeHint":  "Karaoke mode, word-by-word follow the audio"
                 }
 }

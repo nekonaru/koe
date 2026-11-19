@@ -1,6 +1,6 @@
-export type OutputFormat = 'txt' | 'srt' | 'vtt' | 'json'
+export type OutputFormat = 'txt' | 'srt' | 'vtt' | 'json' | 'csv'
 
-export const OUTPUT_FORMATS: readonly OutputFormat[] = ['txt', 'srt', 'vtt', 'json'] as const
+export const OUTPUT_FORMATS: readonly OutputFormat[] = ['txt', 'srt', 'vtt', 'json', 'csv'] as const
 
 export interface TranscriptSegment {
   startMs: number
@@ -71,6 +71,20 @@ export function toJson(segments: readonly TranscriptSegment[]): string {
   return JSON.stringify(payload, null, 2)
 }
 
+/** CSV with per-segment timestamps, quoted where needed. BOM prepended so
+ *  Excel opens UTF-8 correctly. */
+export function toCsv(segments: readonly TranscriptSegment[]): string {
+  const escapeCell = (value: string): string => {
+    if (/[",\r\n]/.test(value)) return `"${value.replace(/"/g, '""')}"`
+    return value
+  }
+  const rows = segments.map((segment) =>
+    [formatSrtTime(segment.startMs), formatSrtTime(segment.endMs), escapeCell(segment.text.trim())].join(','),
+  )
+  const header = '\uFEFF' + 'start,end,text'
+  return header + '\r\n' + rows.join('\r\n') + '\r\n'
+}
+
 export function formatTranscript(segments: readonly TranscriptSegment[], format: OutputFormat): string {
   switch (format) {
     case 'txt':
@@ -81,6 +95,8 @@ export function formatTranscript(segments: readonly TranscriptSegment[], format:
       return toVtt(segments)
     case 'json':
       return toJson(segments)
+    case 'csv':
+      return toCsv(segments)
   }
 }
 
@@ -197,6 +213,7 @@ export const MIME_TYPES: Record<OutputFormat, string> = {
   srt: 'application/x-subrip;charset=utf-8',
   vtt: 'text/vtt;charset=utf-8',
   json: 'application/json;charset=utf-8',
+  csv: 'text/csv;charset=utf-8',
 }
 
 export function outputFileName(inputName: string, format: OutputFormat): string {

@@ -1,4 +1,4 @@
-﻿# Koe: PRD dan Master Prompt (Versi Web)
+# Koe: PRD dan Master Prompt (Versi Web)
 
 Website transkripsi audio/video ke teks, gratis, tanpa batas pemakaian, tanpa backend. Seluruh proses jalan di browser pengguna dan bisa dipakai offline sebagai PWA.
 
@@ -289,3 +289,15 @@ Dieksekusi pada 2026-11-14. Deviasi dari draf di atas, beserta alasannya:
 pm run build dan output dist.
 7. **Pengukuran RTF** ada di enchmark.md. Angka final per perangkat acuan harus diukur dengan metodologi di sana, bukan ditebak.
 8. **Multithreading.** Aktif hanya bila situs disajikan dengan header COOP/COEP (lihat public/_headers). Tanpa header, ONNX Runtime jatuh ke satu thread.
+
+## Bagian 20: Catatan Implementasi v1.8.0
+
+Dieksekusi pada 2026-11-19.
+
+- **Varian model diganti ke timestamped.** Pakai return_timestamps: 'word' pada bundel lama gagal dengan error "Model outputs must contain cross attentions". Semua model kini varian `*_timestamped` dari onnx-community: tiny tertanam (~45 MB), base tertanam (~81 MB), small on-demand (~254 MB). File model tertanam lama dihapus dan diganti. Ukuran di UI diukur dari repo HF pada 2026-11-19.
+- **Mode karaoke.** Worker menjalankan `return_timestamps: 'word'` dan mengirim pesan `words` terpisah ({startMs,endMs,text}). UI mengalir sebagai satu paragraf, menyorot kata aktif mengikuti posisi pemutaran, autoscroll ke kata aktif, dan meredupkan kata yang tidak cocok dengan pencarian. Daftar baris tetap tersedia sebagai default.
+- **Service worker v5.** File model diambil network-first dengan cache generik dan `isCacheableResponse` (cek content-type). Sebelumnya entri fallback HTML bisa tertimpa sebagai file model dan tersaji selamanya; kasus nyata di preview lokal ditemukan via error JSON.parse pada config.json.
+- **CSV** sebagai format keluaran kelima (BOM + sel ter-escape).
+- **Pintasan keyboard.** Space memutar/menjeda pemutaran yang tersedia, / memfokuskan pencarian.
+- **Pemangkasan jendela hening.** Jendela dengan puncak |x| < 0,01 dilewati agar Whisper tidak mengarang di audio hening atau bising.
+- **ZIP menyertakan viewer.** Arsip ekspor berisi `nama.view.html` per file selain transkripnya.

@@ -6,6 +6,7 @@ export function HelpPage() {
     { titleKey: 'help.browserTitle', bodyKey: 'help.browserBody' },
     { titleKey: 'help.modelTitle', bodyKey: 'help.modelBody' },
     { titleKey: 'help.recoverFailedTitle', bodyKey: 'help.recoverFailedBody' },
+    { titleKey: 'help.shortcutsTitle', bodyKey: 'help.shortcutsBody' },
     { titleKey: 'help.memoryTitle', bodyKey: 'help.memoryBody' },
     { titleKey: 'help.formatTitle', bodyKey: 'help.formatBody' },
     { titleKey: 'help.privacyTitle', bodyKey: 'help.privacyBody' },

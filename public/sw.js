@@ -1,12 +1,11 @@
 // Koe service worker: app shell caching for offline use.
-// Model files are handled separately by the browser Cache Storage API
-// (via Transformers.js), not by this worker. No requests leave the origin
-// except the ones the page itself makes (site assets and model downloads
-// explicitly initiated by the user).
+// Tiny is precached serially. Model files are served network-first with
+// cache fill: a fresh deploy always wins over a stale entry, and offline
+// use falls back to the cache. Cross-origin requests are never intercepted.
 // Resolve the app base from the service worker's own scope so the app works
 // both at / (custom domain or Cloudflare Pages) and /koe/ (GitHub Pages).
 const BASE = new URL(self.registration.scope).pathname
-const CACHE_NAME = 'koe-shell-v4'
+const CACHE_NAME = 'koe-shell-v5'
 const APP_SHELL = [BASE, BASE + 'index.html', BASE + 'manifest.webmanifest', BASE + 'icon.svg']
 
 // On install, precaching model files happens in the background after the app
@@ -27,7 +26,7 @@ const MODEL_FILES = [
   'special_tokens_map.json',
   'added_tokens.json',
 ]
-const PRECACHE_MODEL = 'whisper-tiny'
+const PRECACHE_MODEL = 'whisper-tiny_timestamped'
 
 function modelPrecacheUrls() {
   return MODEL_FILES.map((file) => `${BASE}models/onnx-community/${PRECACHE_MODEL}/${file}`)
@@ -80,17 +79,20 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   // Never intercept model downloads or cross-origin requests.
   if (url.origin !== self.location.origin) return
-  if (url.pathname.startsWith(BASE + 'ort/')) {
-    // ONNX Runtime WASM binaries are immutable; serve from cache when present.
-    event.respondWith(
-      caches.match(request).then((cached) => cached ?? fetch(request).then((response) => {
-        if (response.ok) {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-        }
-        return response
-      })),
-    )
+
+  const sameBase = url.pathname.startsWith(BASE)
+  const relPath = sameBase ? url.pathname.slice(BASE.length) : url.pathname.slice(1)
+
+  // Immutable ONNX Runtime WASM binaries: cache-first.
+  if (relPath.startsWith('ort/')) {
+    event.respondWith(cacheFirst(request))
+    return
+  }
+
+  // Model files: network-first so a fresh deploy wins over a stale entry.
+  // We still fill the cache on the way out for offline use.
+  if (relPath.startsWith('models/')) {
+    event.respondWith(networkFirstWithCacheFill(request))
     return
   }
 
@@ -110,17 +112,45 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Static assets: cache first, then network with cache fill.
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached
-      return fetch(request).then((response) => {
-        if (response.ok) {
-          const clone = response.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
-        }
-        return response
-      })
-    }),
-  )
+  // App-hashed assets and icons: cache-first. Everything else: network-first,
+  // and we only cache it if the response is OK and has a reasonable MIME type.
+  if (relPath.startsWith('assets/') || relPath.startsWith('icons/') || relPath === 'manifest.webmanifest' || relPath === 'icon.svg') {
+    event.respondWith(cacheFirst(request))
+    return
+  }
+  event.respondWith(networkFirstWithCacheFill(request))
 })
+
+function cacheFirst(request) {
+  return caches.match(request).then(
+    (cached) => cached ?? fetchAndCache(request),
+  )
+}
+
+async function networkFirstWithCacheFill(request) {
+  try {
+    const response = await fetch(request)
+    if (response.ok && isCacheableResponse(response)) {
+      const clone = response.clone()
+      caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+    }
+    return response
+  } catch {
+    const cached = await caches.match(request)
+    return cached ?? Response.error()
+  }
+}
+
+async function fetchAndCache(request) {
+  const response = await fetch(request)
+  if (response.ok && isCacheableResponse(response)) {
+    const clone = response.clone()
+    caches.open(CACHE_NAME).then((cache) => cache.put(request, clone))
+  }
+  return response
+}
+
+function isCacheableResponse(response) {
+  const type = response.headers.get('content-type') ?? ''
+  return /text\/html|javascript|css|json|wasm|image\/|font\/|manifest/.test(type)
+}

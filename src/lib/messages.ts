@@ -12,8 +12,16 @@ export type ToWorker =
       modelId: ModelId
       language: string | null
       task: Task
+      /** 'segment' keeps grouped subtitles; 'word' emits word-level timestamps */
+      granularity?: 'segment' | 'word'
     }
   | { type: 'cancel' }
+
+export interface KaraokeWord {
+  startMs: number
+  endMs: number
+  text: string
+}
 
 /** Messages sent from the worker back to the UI thread. */
 export type FromWorker =
@@ -21,5 +29,6 @@ export type FromWorker =
   | { type: 'ready' }
   | { type: 'progress'; percent: number; window: number; totalWindows: number }
   | { type: 'segment'; segment: TranscriptSegment }
+  | { type: 'words'; words: KaraokeWord[] }
   | { type: 'done' }
   | { type: 'error'; code: string; message: string }

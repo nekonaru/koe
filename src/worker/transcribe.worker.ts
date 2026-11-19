@@ -169,9 +169,20 @@ async function handleInit(modelId: ModelId) {
   post({ type: 'ready' })
 }
 
-async function handleTranscribe(pcm: Float32Array, modelId: ModelId, language: string | null, task: 'transcribe' | 'translate') {
+async function handleTranscribe(
+  pcm: Float32Array,
+  modelId: ModelId,
+  language: string | null,
+  task: 'transcribe' | 'translate',
+  granularity: 'segment' | 'word',
+) {
+  // All three models ship as timestamped exports, so word-level output is
+  // always available.
+  const effective: 'segment' | 'word' = granularity
+
   const transcriber = await getTranscriber(modelId)
   const totalWindows = Math.max(1, Math.ceil(pcm.length / WINDOW_SAMPLES))
+  const wordsOut: Array<import('../lib/messages').KaraokeWord> = []
 
   for (let index = 0; index < totalWindows; index += 1) {
     if (cancelRequested) {
@@ -181,31 +192,88 @@ async function handleTranscribe(pcm: Float32Array, modelId: ModelId, language: s
     const windowStartSample = index * WINDOW_SAMPLES
     const windowPcm = pcm.subarray(windowStartSample, Math.min(pcm.length, windowStartSample + WINDOW_SAMPLES))
 
+    // Skip silent windows: Whisper hallucinates text on silence, so emit
+    // nothing for stretches with no audible content.
+    let peak = 0
+    for (let sample = 0; sample < windowPcm.length; sample += 64) {
+      const v = Math.abs(windowPcm[sample])
+      if (v > peak) peak = v
+      // Early exit once a loud enough sample is found
+      if (peak >= 0.01) break
+    }
+    if (peak < 0.01) {
+      post({ type: 'progress', percent: Math.round(((index + 1) / totalWindows) * 100), window: index + 1, totalWindows })
+      continue
+    }
+
     const options: Record<string, unknown> = {
-      return_timestamps: true,
+      return_timestamps: effective === 'word' ? 'word' : true,
       task,
     }
     if (language) options.language = language
 
     const output = await transcriber(windowPcm, options)
-    const chunks: Array<{ timestamp?: [number | null, number | null]; text?: string }> =
+    const rawChunks: Array<{ timestamp?: [number | null, number | null]; text?: string }> =
       (output as { chunks?: Array<{ timestamp?: [number | null, number | null]; text?: string }> }).chunks ?? []
 
-    for (const chunk of chunks) {
-      const text = (chunk.text ?? '').trim()
-      if (!text) continue
-      // Timestamps from the pipeline are relative to the window we fed in.
-      const startRaw = chunk.timestamp?.[0]
-      const endRaw = chunk.timestamp?.[1]
-      const startMs = windowStartSample / SAMPLE_RATE * 1000 + (typeof startRaw === 'number' ? startRaw * 1000 : 0)
-      const endMs = windowStartSample / SAMPLE_RATE * 1000 + (typeof endRaw === 'number' ? endRaw * 1000 : WINDOW_SECONDS * 1000)
-      post({
-        type: 'segment',
-        segment: { startMs: Math.round(startMs), endMs: Math.round(endMs), text },
-      })
+    const winOffsetMs = (windowStartSample / SAMPLE_RATE) * 1000
+
+    if (effective === 'segment') {
+      for (const chunk of rawChunks) {
+        const text = (chunk.text ?? '').trim()
+        if (!text) continue
+        const startRaw = chunk.timestamp?.[0]
+        const endRaw = chunk.timestamp?.[1]
+        const startMs = winOffsetMs + (typeof startRaw === 'number' ? startRaw * 1000 : 0)
+        const endMs = winOffsetMs + (typeof endRaw === 'number' ? endRaw * 1000 : WINDOW_SECONDS * 1000)
+        post({
+          type: 'segment',
+          segment: { startMs: Math.round(startMs), endMs: Math.round(endMs), text },
+        })
+      }
+    } else {
+      // Group words into readable subtitle chunks (roughly one sentence).
+      let current: typeof wordsOut = []
+      const flush = () => {
+        if (current.length === 0) return
+        const text = current.map((w) => w.text).join('').replace(/\s+/g, ' ').trim()
+        if (text) {
+          post({
+            type: 'segment',
+            segment: { startMs: current[0].startMs, endMs: current[current.length - 1].endMs, text },
+          })
+        }
+        current = []
+      }
+      for (const chunk of rawChunks) {
+        const wordText = chunk.text ?? ''
+        if (!wordText.trim()) continue
+        const startRaw = chunk.timestamp?.[0]
+        const endRaw = chunk.timestamp?.[1]
+        if (typeof startRaw !== 'number' || typeof endRaw !== 'number') continue
+        const word = {
+          startMs: Math.round(winOffsetMs + startRaw * 1000),
+          endMs: Math.round(winOffsetMs + endRaw * 1000),
+          text: wordText,
+        }
+        wordsOut.push(word)
+        const gapMs = current.length > 0 ? word.startMs - current[current.length - 1].endMs : 0
+        const shouldFlush =
+          current.length >= 8 ||
+          (current.length > 0 && (word.endMs - current[0].startMs) > 4500) ||
+          (gapMs > 700 && current.length > 0) ||
+          (/[.!?]["')]?\s*$/.test(word.text.trim()) && current.length >= 4)
+        if (shouldFlush) flush()
+        current.push(word)
+      }
+      flush()
     }
 
     post({ type: 'progress', percent: Math.round(((index + 1) / totalWindows) * 100), window: index + 1, totalWindows })
+  }
+
+  if (effective === 'word' && wordsOut.length > 0) {
+    post({ type: 'words', words: wordsOut })
   }
 
   post({ type: 'done' })
@@ -225,7 +293,9 @@ workerScope.onmessage = (event: MessageEvent<ToWorker>) => {
     // Any cancel that arrived before this point is stale; do not honor it for
     // the new transcription, or the user would see an instant phantom abort.
     cancelRequested = false
-    handleTranscribe(message.pcm, message.modelId, message.language, message.task).catch(reportError)
+    handleTranscribe(message.pcm, message.modelId, message.language, message.task, message.granularity ?? 'segment').catch(
+      reportError,
+    )
   }
 }
 

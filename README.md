@@ -59,6 +59,9 @@
 | **Audio and video input** | wav, mp3, m4a, flac, ogg, mp4, mov, webm via file picker or drag and drop |
 | **In-browser decoding** | Media is decoded and resampled to 16 kHz mono PCM with the Web Audio API |
 | **Live progress** | Per-window progress bar, elapsed time, and segments streaming in as they are transcribed |
+| **Silence trimming** | Near silent windows are skipped, removing hallucinated filler |
+| **Karaoke word mode** | Word-level timestamps highlight each word as it is spoken |
+| **Keyboard shortcuts** | Space toggles playback; / focuses search |
 | **Batch queue** | Queue several files and download all results as a ZIP |
 | **Safe cancellation** | Cancel between 30-second windows; the worker is terminated and recreated |
 
@@ -69,8 +72,9 @@
 | **Plain text** | TXT for reading and pasting anywhere |
 | **Subtitles** | SRT and VTT with accurate per-segment timestamps |
 | **Structured data** | JSON with per-segment start and end timestamps in milliseconds |
+| **Spreadsheet data** | CSV with per-segment timestamps, opens in Excel with a BOM |
 | **Copy and download** | One click to clipboard, or save the chosen format per file |
-| **ZIP export** | Download every finished transcript in one archive |
+| **ZIP export** | Download every finished transcript in one archive, including each standalone viewer page |
 | **Waveform with seek** | Canvas waveform with progress fill; click anywhere to jump the player |
 | **Playback sync** | Listen to the audio with the current segment highlighted; click any timestamp to jump |
 | **Standalone viewer export** | Self-contained HTML page with the transcript and the embedded audio; open it offline anywhere |
@@ -88,7 +92,7 @@
 |---------|-------------|
 | **Tiny model** | Bundled with koe, fastest, the default |
 | **Base model** | Bundled with koe, balanced speed and accuracy |
-| **Small model** | Most accurate of the three, about 242 MB, downloaded on demand, needs more memory |
+| **Small model** | Most accurate of the three, about 254 MB, downloaded on demand, needs more memory |
 | **Quantized weights** | Whisper ONNX models quantized for browser use |
 | **Model manager** | See which models are cached, total browser storage used, and delete models you no longer need |
 | **Offline out of the box** | Tiny and Base work immediately, even offline, after the first page load |
@@ -367,7 +371,7 @@ Tiny for speed and short files and the default, Base for more accuracy, Small fo
 <details>
 <summary><b>Does it work offline?</b></summary>
 
-Yes. Tiny and Base are bundled with koe and work offline from the very first page, no download needed. Small downloads once from Hugging Face (about 231 MB) and is then cached for offline use too. koe can be installed as a PWA.
+Yes. Tiny and Base are bundled with koe and work offline from the very first page, no download needed. Small downloads once from Hugging Face (about 254 MB) and is then cached for offline use too. koe can be installed as a PWA.
 
 </details>
 

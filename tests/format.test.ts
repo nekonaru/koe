@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  OUTPUT_FORMATS,
   formatSrtTime,
   formatVttTime,
   formatTranscript,
   outputFileName,
+  toCsv,
   toJson,
   toSrt,
   toTxt,
@@ -74,12 +76,32 @@ describe('toJson', () => {
   })
 })
 
+describe('toCsv', () => {
+  it('emits a BOM header and one row per segment', () => {
+    const csv = toCsv(segments)
+    expect(csv.charCodeAt(0)).toBe(0xfeff)
+    const rows = csv.replace(/﻿/, '').trimEnd().split('\r\n')
+    expect(rows[0]).toBe('start,end,text')
+    expect(rows).toHaveLength(4)
+    expect(rows[1]).toBe('00:00:00,000,00:00:02,500,Selamat pagi.')
+  })
+  it('quotes cells containing commas', () => {
+    const csv = toCsv([{ startMs: 0, endMs: 1000, text: 'hello, world' }])
+    expect(csv).toContain('"hello, world"')
+  })
+})
+
 describe('formatTranscript', () => {
   it('dispatches by format', () => {
     expect(formatTranscript(segments, 'txt')).toBe(toTxt(segments))
     expect(formatTranscript(segments, 'srt')).toBe(toSrt(segments))
     expect(formatTranscript(segments, 'vtt')).toBe(toVtt(segments))
     expect(formatTranscript(segments, 'json')).toBe(toJson(segments))
+    expect(formatTranscript(segments, 'csv')).toBe(toCsv(segments))
+  })
+
+  it('includes csv in the dropdown list', () => {
+    expect(OUTPUT_FORMATS).toEqual(['txt', 'srt', 'vtt', 'json', 'csv'])
   })
 })
 
