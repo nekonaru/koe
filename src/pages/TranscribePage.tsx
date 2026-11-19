@@ -8,7 +8,7 @@ import { useI18n } from '../i18n/useI18n'
 import { decodeToPcm16kMono, formatDuration } from '../audio/decode'
 import { DEFAULT_MODEL, LANGUAGES, formatBytes, getModel, type ModelId } from '../lib/models'
 import { toKoeError, type KoeErrorCode } from '../lib/errors'
-import type { FromWorker, Task, ToWorker } from '../lib/messages'
+import type { FromWorker, Task, ToWorker, KaraokeWord } from '../lib/messages'
 import {
   OUTPUT_FORMATS,
   formatTranscript,
@@ -32,6 +32,8 @@ interface QueueItem {
   window: number
   totalWindows: number
   segments: TranscriptSegment[]
+  /** Present only when word-level timestamps were requested */
+  words?: KaraokeWord[]
   errorCode: KoeErrorCode | null
   detail: string | null
   startedAt: number | null
@@ -65,6 +67,7 @@ export function TranscribePage() {
   const [language, setLanguage] = useState('indonesian')
   const [model, setModel] = useState<ModelId>(DEFAULT_MODEL)
   const [task, setTask] = useState<Task>('transcribe')
+  const [displayMode, setDisplayMode] = useState<'lines' | 'karaoke'>('lines')
   const [outputFormat, setOutputFormat] = useState<OutputFormat>('txt')
   const [modelReady, setModelReady] = useState<Partial<Record<ModelId, boolean>>>({})
   const [download, setDownload] = useState<DownloadState>(idleDownload)
@@ -126,6 +129,14 @@ export function TranscribePage() {
             current.map((item) =>
               item.id === id ? { ...item, segments: [...item.segments, message.segment] } : item,
             ),
+          )
+          break
+        }
+        case 'words': {
+          const id = activeIdRef.current
+          if (!id) break
+          setItems((current) =>
+            current.map((item) => (item.id === id ? { ...item, words: message.words } : item)),
           )
           break
         }
@@ -221,7 +232,7 @@ export function TranscribePage() {
     setItems((current) =>
       current.map((entry) =>
         entry.id === item.id
-          ? { ...entry, status: 'processing', percent: 0, window: 0, totalWindows: 0, segments: [], errorCode: null, startedAt: Date.now() }
+          ? { ...entry, status: 'processing', percent: 0, window: 0, totalWindows: 0, segments: [], words: undefined, errorCode: null, startedAt: Date.now() }
           : entry,
       ),
     )
@@ -233,9 +244,10 @@ export function TranscribePage() {
       modelId: modelRef.current,
       language: language === 'auto' ? null : language,
       task,
+      granularity: displayMode === 'karaoke' ? 'word' : 'segment',
     }
     worker.postMessage(message, [copy.buffer])
-  }, [createWorker, language, task])
+  }, [createWorker, language, task, displayMode])
 
   const launchRef = useRef(launch)
   useEffect(() => {
@@ -372,6 +384,38 @@ export function TranscribePage() {
     return () => window.removeEventListener('paste', handler)
   }, [addFiles])
 
+  // Keyboard shortcuts: Space toggles the first available player, slash
+  // focuses the transcript search box. Ignored while typing in a field.
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      const target = event.target
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement
+      ) {
+        return
+      }
+      if (event.code === 'Space') {
+        const button = document.querySelector('[data-testid="listen-toggle"]')
+        if (button instanceof HTMLButtonElement) {
+          event.preventDefault()
+          button.click()
+        }
+        return
+      }
+      if (event.key === '/') {
+        const input = document.querySelector('[data-testid="transcript-search"]')
+        if (input instanceof HTMLElement) {
+          event.preventDefault()
+          input.focus()
+        }
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
   const cancelItem = useCallback((item: QueueItem) => {
     // Hard stop: terminate the worker. The model stays cached in Cache Storage,
     // so the next run reloads from local cache, not the network.
@@ -479,7 +523,19 @@ export function TranscribePage() {
   const downloadZip = useCallback(async () => {
     const zip = new JSZip()
     for (const item of doneItems) {
+      const base = item.name.replace(/\.[^.]+$/, '')
       zip.file(outputFileName(item.name, outputFormat), formatTranscript(item.segments, outputFormat))
+      // Also bundle a standalone viewer with the embedded audio when available.
+      const pcm = pcmStoreRef.current.get(item.id)
+      if (pcm) {
+        const audioDataUri = `data:audio/wav;base64,${bytesToBase64(encodeWav(pcm, 16000))}`
+        const html = toStandaloneHtml(item.segments, {
+          title: item.name,
+          audioDataUri,
+          lang: locale === 'id' ? 'id' : 'en',
+        })
+        zip.file(`${base}.view.html`, html)
+      }
     }
     const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' })
     const url = URL.createObjectURL(blob)
@@ -488,7 +544,7 @@ export function TranscribePage() {
     anchor.download = `koe-transcripts.zip`
     anchor.click()
     URL.revokeObjectURL(url)
-  }, [doneItems, outputFormat])
+  }, [doneItems, outputFormat, locale])
 
   // Terminate the worker on unmount.
   useEffect(
@@ -719,6 +775,18 @@ export function TranscribePage() {
             </select>
           </label>
 
+          <label className="block">
+            <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('step2.displayMode')}</span>
+            <select
+              value={displayMode}
+              onChange={(event) => setDisplayMode(event.target.value as 'lines' | 'karaoke')}
+              className="mt-1 w-full rounded-xl border border-ai/20 bg-white px-3 py-2.5 text-sm font-semibold text-neutral-800 outline-none focus:ring-2 focus:ring-coral/50 dark:border-warm/15 dark:bg-ai dark:text-warm"
+            >
+              <option value="lines">{t('step2.displayLines')}</option>
+              <option value="karaoke">{t('step2.displayKaraoke')}</option>
+            </select>
+          </label>
+
           {/* Model download / bundled notice */}
           <div className="sm:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ai/10 bg-ai/5 p-4 dark:border-warm/10 dark:bg-warm/5">
@@ -830,6 +898,8 @@ export function TranscribePage() {
                   canPlay={pcmIds.has(item.id)}
                   getPcm={() => pcmStoreRef.current.get(item.id) ?? null}
                   segments={item.segments}
+                  words={item.words}
+                  displayMode={displayMode}
                   onShiftSegments={(offsetMs) =>
                     setItems((current) =>
                       current.map((entry) =>

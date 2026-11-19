@@ -4,16 +4,16 @@ export interface ModelInfo {
   id: ModelId
   /** Hugging Face repository id used by Transformers.js */
   hfId: string
-  /** Approximate download size in bytes (quantized ONNX files + tokenizer), measured via the HF API on 2026-11-14 */
+  /** Approximate download size in bytes (quantized ONNX files + tokenizer), measured via the HF API on 2026-11-19 */
   approxBytes: number
   /** True when the model ships inside the site and needs no download */
   bundled: boolean
 }
 
 export const MODELS: readonly ModelInfo[] = [
-  { id: 'tiny', hfId: 'onnx-community/whisper-tiny', approxBytes: 43_100_000, bundled: true },
-  { id: 'base', hfId: 'onnx-community/whisper-base', approxBytes: 77_500_000, bundled: true },
-  { id: 'small', hfId: 'onnx-community/whisper-small', approxBytes: 241_700_000, bundled: false },
+  { id: 'tiny', hfId: 'onnx-community/whisper-tiny_timestamped', approxBytes: 45_200_000, bundled: true },
+  { id: 'base', hfId: 'onnx-community/whisper-base_timestamped', approxBytes: 81_300_000, bundled: true },
+  { id: 'small', hfId: 'onnx-community/whisper-small_timestamped', approxBytes: 253_500_000, bundled: false },
 ] as const
 
 export const DEFAULT_MODEL: ModelId = 'tiny'

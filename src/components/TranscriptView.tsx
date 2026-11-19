@@ -2,6 +2,7 @@
 import { useI18n } from '../i18n/useI18n'
 import { SAMPLE_RATE } from '../audio/decode'
 import type { TranscriptSegment } from '../format/format'
+import type { KaraokeWord } from '../lib/messages'
 
 interface TranscriptViewProps {
   /** Lazy access to the 16 kHz mono PCM buffer, used by playback only */
@@ -9,6 +10,10 @@ interface TranscriptViewProps {
   /** Whether the audio is available for playback (avoids reading refs during render) */
   canPlay: boolean
   segments: TranscriptSegment[]
+  /** Word-level timestamps, when the user asked for karaoke output */
+  words?: KaraokeWord[]
+  /** How to render the transcript: lines (default) or flowing karaoke text */
+  displayMode: 'lines' | 'karaoke'
   onEditSegment: (index: number, text: string) => void
   /** Shift every segment's timestamps by offsetMs */
   onShiftSegments: (offsetMs: number) => void
@@ -40,8 +45,8 @@ function highlight(text: string, query: string) {
 
 function countWords(segments: readonly TranscriptSegment[]): number {
   return segments.reduce((total, segment) => {
-    const words = segment.text.trim().split(/\s+/).filter(Boolean)
-    return total + words.length
+    const segWords = segment.text.trim().split(/\s+/).filter(Boolean)
+    return total + segWords.length
   }, 0)
 }
 
@@ -145,7 +150,58 @@ function Waveform({ getPcm, playheadMs, onSeek, canPlay, t }: {
   )
 }
 
-export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShiftSegments }: TranscriptViewProps) {
+/** Karaoke view: a flowing paragraph whose words highlight during playback. */
+function KaraokeView({
+  words,
+  playheadMs,
+  query,
+  t,
+}: {
+  words: KaraokeWord[]
+  playheadMs: number
+  query: string
+  t: (key: string, params?: Record<string, string | number>) => string
+}) {
+  const containerRef = useRef<HTMLParagraphElement | null>(null)
+
+  // Auto-scroll the active word into view while playing
+  useEffect(() => {
+    if (!containerRef.current) return
+    const active = containerRef.current.querySelector<HTMLElement>('[data-active="true"]')
+    if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [playheadMs])
+
+  const lowerQuery = query.trim().toLowerCase()
+
+  return (
+    <div className="max-w-none px-2 py-3">
+      <p ref={containerRef} className="text-base leading-loose text-neutral-800 dark:text-warm/90">
+        {words.map((word, index) => {
+          const active = playheadMs >= word.startMs && playheadMs < word.endMs
+          const dim = lowerQuery.length > 0 && !word.text.toLowerCase().includes(lowerQuery)
+          return (
+            <span
+              key={index}
+              data-active={active ? 'true' : 'false'}
+              className={[
+                'rounded px-0.5 transition-colors',
+                active ? 'bg-coral font-extrabold text-[#1A1207]' : '',
+                dim ? 'opacity-30' : '',
+              ].join(' ')}
+            >
+              {word.text}
+            </span>
+          )
+        })}
+      </p>
+      <p className="mt-3 text-[10px] font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+        {t('results.karaokeHint')}
+      </p>
+    </div>
+  )
+}
+
+export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, onEditSegment, onShiftSegments }: TranscriptViewProps) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [playState, setPlayState] = useState<'stopped' | 'playing' | 'paused'>('stopped')
@@ -213,7 +269,10 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShi
   const startPlayback = useCallback(
     (offsetMs: number) => {
       const pcm = getPcm()
-      if (!pcm) return
+      if (!pcm) {
+        console.warn('[koe] playback requested but PCM buffer is empty for this item')
+        return
+      }
       const AudioContextCtor = window.AudioContext ??
         (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
       if (!AudioContextCtor) return
@@ -284,11 +343,11 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShi
     [stopPlayback],
   )
 
-  const words = countWords(segments)
+  const totalWords = countWords(segments)
 
   // Footer: words per minute computed from the last segment end.
   const lastEndMs = segments.length > 0 ? segments[segments.length - 1].endMs : 0
-  const wpm = lastEndMs > 0 ? Math.round((words / lastEndMs) * 60000) : 0
+  const wpm = lastEndMs > 0 ? Math.round((totalWords / lastEndMs) * 60000) : 0
 
   return (
     <div className="flex max-h-80 flex-col">
@@ -300,6 +359,7 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShi
           onChange={(event) => setQuery(event.target.value)}
           placeholder={t('results.searchPlaceholder')}
           aria-label={t('results.searchPlaceholder')}
+          data-testid="transcript-search"
           className="min-w-40 flex-1 rounded-lg border border-ai/20 bg-white px-3 py-1.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-coral/50 dark:border-warm/15 dark:bg-ai dark:text-warm"
         />
         {query && (
@@ -313,6 +373,7 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShi
             onClick={togglePlay}
             aria-pressed={playState !== 'stopped'}
             aria-label={playState === 'playing' ? t('results.pause') : t('results.listen')}
+            data-testid="listen-toggle"
             className="flex items-center gap-1.5 rounded-lg bg-ai px-3 py-1.5 text-xs font-extrabold text-warm hover:bg-ai-light focus-visible:ring-2 focus-visible:ring-coral/50"
           >
             {playState === 'playing' ? (
@@ -343,6 +404,8 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShi
       <div ref={listRef} className="overflow-auto bg-white px-2 py-2 dark:bg-[#191D29]">
         {segments.length === 0 ? (
           <p className="px-2 py-3 text-sm text-neutral-500">{t('results.emptyTranscript')}</p>
+        ) : displayMode === 'karaoke' && words && words.length > 0 ? (
+          <KaraokeView words={words} playheadMs={playheadMs} query={query} t={t} />
         ) : (
           <ol className="space-y-1">
             {segments.map((segment, index) => {
@@ -407,7 +470,7 @@ export function TranscriptView({ getPcm, canPlay, segments, onEditSegment, onShi
       {/* Footer stats */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-ai/10 px-4 py-1.5 text-[10px] font-semibold text-neutral-500 dark:border-warm/10 dark:text-neutral-400">
         <span>
-          {t('results.stats', { words, segments: segments.length })}
+          {t('results.stats', { words: totalWords, segments: segments.length })}
           {wpm > 0 && ` · ${t('results.wpm', { wpm })}`}
         </span>
         <span className="flex items-center gap-2">

@@ -1,7 +1,23 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project are documented in this file.
 
+## v1.8.0
+
+A focused release: karaoke word highlighting, spreadsheet export, and word-level timestamps that actually work on the bundled models.
+
+### New features
+
+- **Karaoke word mode.** Switch the subtitle style to Karaoke before transcribing and each word lights up as it is spoken, with auto-scroll. Works on every model.
+- **CSV export.** A fifth output format with per-segment timestamps; opens cleanly in Excel via a BOM.
+- **Silence trimming.** Near-silent 30-second windows are skipped instead of turned into hallucinated text.
+- **Keyboard shortcuts.** Space toggles playback; / focuses the search box.
+- **ZIP includes the viewer.** The archive now also carries each standalone viewer page, ready to share.
+
+### Improvements
+
+- **Word timestamps that work.** Bundled Tiny and Base now ship the timestamped exports (about 45 MB and 81 MB), and Small downloads the timestamped build too (about 254 MB). The previous bundles could not produce word-level timestamps.
+- **Safer offline model cache.** The service worker fetches model files network-first and only caches sensible content types, so a stale or corrupt entry from an interrupted download is no longer served forever.
 ## v1.7.0
 
 Big user-facing update: export a standalone transcript viewer, shift timestamps, install koe as a PWA, and pick light, dark or system mode.

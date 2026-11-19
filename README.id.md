@@ -59,6 +59,9 @@
 | **Input audio dan video** | wav, mp3, m4a, flac, ogg, mp4, mov, webm lewat pemilihan file atau seret dan lepas |
 | **Dekode di browser** | Media didekode dan di-resample ke PCM 16 kHz mono dengan Web Audio API |
 | **Progress langsung** | Progress per jendela, waktu berjalan, dan segmen muncul bertahap |
+| **Pemangkasan hening** | Jendela yang hampir hening dilewati, menghapus isian yang mengada-ada |
+| **Mode karaoke** | Timestamp tingkat kata menyorot setiap kata saat diucapkan |
+| **Pintasan keyboard** | Space mengaktifkan atau menghentikan pemutaran; / memfokuskan pencarian |
 | **Antrean batch** | Antrek beberapa file dan unduh semua hasil sebagai ZIP |
 | **Pembatalan aman** | Batalkan di antara jendela 30 detik; worker dihentikan dan dibuat ulang |
 
@@ -69,8 +72,9 @@
 | **Teks polos** | TXT untuk dibaca dan ditempel di mana saja |
 | **Subtitle** | SRT dan VTT dengan timestamp per segmen yang akurat |
 | **Data terstruktur** | JSON dengan timestamp mulai dan selesai per segmen dalam milidetik |
+| **Data spreadsheet** | CSV dengan timestamp per segmen, terbuka di Excel dengan BOM |
 | **Salin dan unduh** | Satu klik ke clipboard, atau simpan format pilihan per file |
-| **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip |
+| **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip, termasuk halaman viewer mandiri masing-masing |
 | **Waveform dengan seek** | Waveform kanvas dengan isi progress; klik di mana pun untuk melompat |
 | **Sinkron pemutaran** | Dengarkan audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat |
 | **Ekspor halaman viewer mandiri** | Halaman HTML self-contained dengan transkrip dan audio tertanam; buka offline di mana saja |
@@ -88,7 +92,7 @@
 |-------|-----------|
 | **Model Tiny** | Tertanam di koe, paling cepat, default |
 | **Model Base** | Tertanam di koe, seimbang antara kecepatan dan akurasi |
-| **Model Small** | Paling akurat dari ketiganya, sekitar 242 MB, diunduh saat dibutuhkan, butuh memori lebih |
+| **Model Small** | Paling akurat dari ketiganya, sekitar 254 MB, diunduh saat dibutuhkan, butuh memori lebih |
 | **Bobot terkuantisasi** | Model Whisper ONNX yang terkuantisasi untuk penggunaan browser |
 | **Pengelola model** | Lihat model mana yang tersimpan, total penyimpanan browser yang terpakai, dan hapus model yang tidak dibutuhkan |
 | **Offline dari awal** | Tiny dan Base langsung jalan, bahkan offline, sejak halaman pertama |
@@ -366,7 +370,7 @@ Tiny untuk kecepatan dan file pendek dan default, Base untuk akurasi lebih baik,
 <details>
 <summary><b>Apakah jalan offline?</b></summary>
 
-Ya. Tiny dan Base tertanam di koe dan jalan offline sejak halaman pertama, tanpa unduhan. Small diunduh sekali dari Hugging Face (sekitar 231 MB) lalu tersimpan untuk dipakai offline. koe bisa dipasang sebagai PWA.
+Ya. Tiny dan Base tertanam di koe dan jalan offline sejak halaman pertama, tanpa unduhan. Small diunduh sekali dari Hugging Face (sekitar 254 MB) lalu tersimpan untuk dipakai offline. koe bisa dipasang sebagai PWA.
 
 </details>
 

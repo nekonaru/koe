@@ -35,7 +35,7 @@
                   "translate":  "Terjemahkan ke Inggris",
                   "modelTiny":  "Tiny - paling cepat, akurasi lebih rendah",
                   "modelBase":  "Base - seimbang kecepatan dan akurasi (default)",
-                  "modelSmall":  "Small - paling akurat, ~242 MB, butuh memori lebih",
+                  "modelSmall":  "Small - paling akurat, ~254 MB, butuh memori lebih",
                   "downloadSize":  "Ukuran unduhan",
                   "dataWarning":  "Kamu akan mengunduh {size}. Ini memakai kuota data. Model disimpan di perangkat ini dan dipakai offline.",
                   "memoryWarning":  "Perangkat ini melaporkan memori terbatas. Pertimbangkan model Tiny atau Base.",
@@ -44,7 +44,10 @@
                   "ready":  "Model siap",
                   "included":  "Sudah termasuk di aplikasi ini, tidak perlu unduhan",
                   "includedNote":  "Disertakan dalam koe. Langsung jalan, sepenuhnya offline, tanpa memakai kuota.",
-                  "loadModel":  "Muat model"
+                  "loadModel":  "Muat model",
+                  "displayMode":  "Gaya subtitle",
+                  "displayLines":  "Baris (default)",
+                  "displayKaraoke":  "Karaoke (sorot kata)"
               },
     "step3":  {
                   "title":  "Hasil",
@@ -116,7 +119,7 @@
                  "browserTitle":  "Browser yang didukung",
                  "browserBody":  "Chrome, Edge, Firefox, atau Safari versi terbaru di desktop. Android Chrome bisa dipakai dengan peringatan memori. iOS Safari masih eksperimental. Multithreading butuh header cross-origin isolation, yang dikirim situs ini.",
                  "modelTitle":  "Memilih model",
-                 "modelBody":  "Tiny paling cepat dan kecil. Base adalah default yang baik. Small paling akurat tapi mengunduh sekitar 242 MB dan butuh memori lebih. Jika ragu, mulai dari Base.",
+                 "modelBody":  "Tiny paling cepat dan kecil. Base adalah default yang baik. Small paling akurat tapi mengunduh sekitar 254 MB dan butuh memori lebih. Jika ragu, mulai dari Base.",
                  "memoryTitle":  "Memori dan file panjang",
                  "memoryBody":  "Audio didekode sepenuhnya di memori, jadi file sangat panjang (lebih dari 30 menit) bisa gagal di perangkat dengan memori kecil. Pakai Tiny, tutup tab lain, atau potong file lebih dulu.",
                  "formatTitle":  "Format keluaran",
@@ -126,7 +129,9 @@
                  "troubleTitle":  "Pemecahan masalah",
                  "troubleBody":  "Macet atau crash? Muat ulang halaman. Jika model gagal dimuat, lihat bagian Model gagal dimuat. Model Tiny dan Base tertanam di koe dan dimuat lokal; hanya Small yang mengunduh. Jika transkripsi gagal pada file panjang, coba model yang lebih kecil.",
                  "recoverFailedTitle":  "Model gagal dimuat",
-                 "recoverFailedBody":  "Klik tombol Coba lagi di sebelah pesan error. Jika masih gagal, bersihkan data situs (DevTools browser, Application, Storage, Clear site data), lalu muat ulang halaman. Jika Base masih gagal, coba Tiny. Jika model Small gagal diunduh, periksa koneksi dan coba lagi; unduhan akan dilanjutkan dari cache browser."
+                 "recoverFailedBody":  "Klik tombol Coba lagi di sebelah pesan error. Jika masih gagal, bersihkan data situs (DevTools browser, Application, Storage, Clear site data), lalu muat ulang halaman. Jika Base masih gagal, coba Tiny. Jika model Small gagal diunduh, periksa koneksi dan coba lagi; unduhan akan dilanjutkan dari cache browser.",
+                 "shortcutsTitle":  "Pintasan keyboard",
+                 "shortcutsBody":  "Space mengaktifkan atau menghentikan pemutaran untuk item pertama yang bisa diputar. / memfokuskan kotak pencarian. Salin file dari aplikasi lain lalu tekan Ctrl+V di mana pun di halaman untuk menambahkannya ke antrean."
              },
     "footer":  {
                    "openSource":  "Open source di bawah MIT",
@@ -201,6 +206,7 @@
                     "waveformSeek":  "Lompat ke posisi mana pun di waveform",
                     "wpm":  "{wpm} kata per menit",
                     "shiftBack":  "Mundurkan timestamp 1 detik",
-                    "shiftForward":  "Majukan timestamp 1 detik"
+                    "shiftForward":  "Majukan timestamp 1 detik",
+                    "karaokeHint":  "Mode karaoke, kata demi kata mengikuti audio"
                 }
 }

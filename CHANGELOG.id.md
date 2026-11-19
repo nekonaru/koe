@@ -1,7 +1,23 @@
-# Changelog
+﻿# Changelog
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.8.0
+
+Rilis fokus: sorot kata karaoke, ekspor spreadsheet, dan timestamp tingkat kata yang benar-benar jalan di model tertanam.
+
+### Fitur baru
+
+- **Mode karaoke.** Ganti gaya subtitle ke Karaoke sebelum transkripsi dan setiap kata menyala saat diucapkan, dengan auto-scroll. Jalan di semua model.
+- **Ekspor CSV.** Format keluaran kelima dengan timestamp per segmen; terbuka rapi di Excel berkat BOM.
+- **Pemangkasan hening.** Jendela 30 detik yang hampir hening dilewati alih-alih diubah menjadi teks yang mengada-ada.
+- **Pintasan keyboard.** Space mengaktifkan atau menghentikan pemutaran; / memfokuskan pencarian.
+- **ZIP menyertakan viewer.** Arsip sekarang juga membawa halaman viewer mandiri masing-masing, siap dibagikan.
+
+### Peningkatan
+
+- **Timestamp kata benar-benar jalan.** Tiny dan Base tertanam kini memakai ekspor timestamped (sekitar 45 MB dan 81 MB), dan Small juga mengunduh build timestamped (sekitar 254 MB). Bundel sebelumnya tidak bisa menghasilkan timestamp tingkat kata.
+- **Cache model offline lebih aman.** Service worker mengambil file model network-first dan hanya menyimpan content-type yang masuk akal, sehingga entri lama atau rusak dari unduhan terputus tidak disajikan selamanya.
 ## v1.7.0
 
 Update besar untuk pengguna: ekspor viewer mandiri, geser timestamp, pasang koe sebagai PWA, dan pilih tema terang, gelap, atau ikut sistem.
