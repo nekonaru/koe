@@ -286,6 +286,59 @@ ${rows}
 </html>
 `
 }
+export function toBilingualSrt(
+  segments: readonly TranscriptSegment[],
+  translations: readonly string[],
+): string {
+  return segments.map((segment, index) => [
+    index + 1,
+    `${formatSrtTime(segment.startMs)} --> ${formatSrtTime(segment.endMs)}`,
+    segment.text.trim(),
+    (translations[index] ?? '').trim(),
+    '',
+  ].join('\n')).join('\n').trimEnd() + '\n'
+}
+
+export function toBilingualVtt(
+  segments: readonly TranscriptSegment[],
+  translations: readonly string[],
+): string {
+  return 'WEBVTT\n\n' + segments.map((segment, index) => [
+    `${formatVttTime(segment.startMs)} --> ${formatVttTime(segment.endMs)}`,
+    segment.text.trim(),
+    (translations[index] ?? '').trim(),
+    '',
+  ].join('\n')).join('\n').trimEnd() + '\n'
+}
+
+export function toBilingualCsv(
+  segments: readonly TranscriptSegment[],
+  translations: readonly string[],
+): string {
+  const cell = (value: string) => `"${value.replace(/"/g, '""')}"`
+  const lines = ['start,end,original,translated']
+  for (const [index, segment] of segments.entries()) {
+    lines.push([
+      formatSrtTime(segment.startMs).replace(',', '.'),
+      formatSrtTime(segment.endMs).replace(',', '.'),
+      cell(segment.text),
+      cell(translations[index] ?? ''),
+    ].join(','))
+  }
+  return '\uFEFF' + lines.join('\r\n') + '\r\n'
+}
+
+export function toBilingualMarkdown(
+  segments: readonly TranscriptSegment[],
+  translations: readonly string[],
+  title: string,
+): string {
+  const header = `# ${title}\n\n`
+  return header + segments.map((segment, index) => (
+    `## ${formatSrtTime(segment.startMs).slice(0, 5)}\n\n${segment.text.trim()}\n\n> ${(translations[index] ?? '').trim()}\n`
+  )).join('\n')
+}
+
 export const MIME_TYPES: Record<OutputFormat, string> = {
   txt: 'text/plain;charset=utf-8',
   srt: 'application/x-subrip;charset=utf-8',

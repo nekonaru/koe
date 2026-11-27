@@ -61,6 +61,7 @@
 | **Progress langsung** | Progress per jendela, waktu berjalan, dan segmen muncul bertahap |
 | **Pemangkasan hening** | Jendela yang hampir hening dilewati, menghapus isian yang mengada-ada |
 | **Mode karaoke** | Timestamp tingkat kata menyorot setiap kata saat diucapkan |
+| **Bahasa tujuan** | Terjemahkan ke Indonesian dan bahasa lain secara offline setelah model diunduh sekali |
 | **Pintasan keyboard** | Space mengaktifkan atau menghentikan pemutaran; / memfokuskan pencarian |
 | **Pustaka proyek** | Transkrip selesai tersimpan di perangkat ini; buka lagi berserta audio dan pengaturannya |
 | **Antrean batch** | Antrek beberapa file dan unduh semua hasil sebagai ZIP |
@@ -75,6 +76,7 @@
 | **Data terstruktur** | JSON dengan timestamp mulai dan selesai per segmen dalam milidetik |
 | **Markdown dan preset** | Markdown dengan bab, baris caption pendek, dan paragraf bersih |
 | **Data spreadsheet** | CSV dengan timestamp per segmen, terbuka di Excel dengan BOM |
+| **Ekspor dwibahasa** | SRT, VTT, CSV, dan Markdown berisi teks asli dan terjemahan sekaligus |
 | **Salin dan unduh** | Satu klik ke clipboard, atau simpan format pilihan per file |
 | **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip, termasuk halaman viewer mandiri masing-masing |
 | **Tautan berbagi hanya-baca** | Transkrip terkompresi di dalam URL, tanpa upload atau akun |
@@ -100,6 +102,7 @@
 | **Bobot terkuantisasi** | Model Whisper ONNX yang terkuantisasi untuk penggunaan browser |
 | **Pengelola model** | Lihat model tersimpan, estimasi unduhan, kesiapan offline, dan rekomendasi model, serta hapus model yang tidak dipakai |
 | **Offline dari awal** | Tiny dan Base langsung jalan, bahkan offline, sejak halaman pertama |
+| **Model terjemahan** | OPUS-MT berlisensi CC BY 4.0 dan NLLB opsional berlisensi CC BY-NC 4.0, dicantumkan di manajer model |
 
 ### Antarmuka
 
@@ -109,6 +112,7 @@
 | **Tema terang, gelap, dan sistem** | Tombol tiga posisi di header; ikut pilihan kamu atau sistem |
 | **PWA yang bisa dipasang** | Tambahkan koe ke layar utama atau peluncur aplikasi |
 | **Palette perintah** | Tekan Ctrl K untuk melompat ke aksi apa pun |
+| **Tampilan dwibahasa** | Pilih asli, terjemahan, atau keduanya, dengan glosarium proyek |
 | **Urungkan dan ulangi** | Batalkan edit transkrip, geser timestamp, dan pembersihan teks |
 | **Pemangkasan segmen** | Edit waktu mulai dan selesai segmen di mode fokus |
 | **Cetak transkrip** | Tata letak cetak bersih dari header hasil |

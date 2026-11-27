@@ -140,7 +140,9 @@
                  "shortcutsBody":  "Space toggles playback. / focuses the search box. Copy file from another app and press Ctrl+V anywhere on the page to add it to the queue.",
                  "projectsTitle":  "Projects and offline work",
                  "shortcutsBody2":  "Ctrl K opens the command palette. Space toggles playback. / focuses the search box. Ctrl Z undoes an edit.",
-                 "projectsBody":  "Finished transcripts are saved in IndexedDB on this device. Audio is only kept when you turn on Keep audio for a project. Clearing site data removes projects and models."
+                 "projectsBody":  "Finished transcripts are saved in IndexedDB on this device. Audio is only kept when you turn on Keep audio for a project. Clearing site data removes projects and models.",
+                 "translateBody":  "Whisper only translates to English by itself. For Indonesian and other targets, koe first makes an English transcript, then a separate offline model translates each segment. The model downloads once, about 100 MB for Indonesian, and stays on this device. The large multilingual option is about 895 MB and uses a non-commercial license.",
+                 "translateTitle":  "Translating to Indonesian"
              },
     "footer":  {
                    "openSource":  "Open source under MIT",
@@ -350,5 +352,24 @@
                    "trimSegment":  "Segment",
                    "trimEnd":  "End (s)",
                    "trimStart":  "Start (s)"
-               }
+               },
+    "translate":  {
+                      "attributionTitle":  "Translation model credits",
+                      "working":  "Translating",
+                      "detected":  "Detected language",
+                      "target":  "Translation target",
+                      "viewOriginal":  "Original",
+                      "englishNative":  "English (Whisper direct)",
+                      "viewBoth":  "Both",
+                      "glossaryHint":  "Names and product terms kept unchanged during translation",
+                      "source":  "Source",
+                      "nativeNote":  "Whisper translates to English directly in one pass.",
+                      "view":  "View",
+                      "license":  "License",
+                      "glossary":  "Glossary, one term per line",
+                      "heavyWarning":  "Large download, non-commercial license. Only use when you need broader language coverage.",
+                      "runAgain":  "Run translation again",
+                      "twoStageNote":  "Whisper first produces English, then a separate offline model translates to the chosen language.",
+                      "viewTranslated":  "Translated"
+                  }
 }

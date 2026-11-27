@@ -15,6 +15,10 @@ export interface Project {
   durationSec: number | null
   sizeBytes: number
   keepAudio: boolean
+  translations?: string[]
+  translationLang?: string
+  glossary?: string
+  detectedLanguage?: string
 }
 
 const DB_NAME = 'koe-projects'

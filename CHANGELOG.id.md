@@ -2,6 +2,29 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v2.1.0
+
+Koe kini bisa menerjemahkan transkrip selesai ke Bahasa Indonesia dan beberapa bahasa lain, seluruhnya di perangkat.
+
+### Fitur baru
+
+- **Terjemahan Indonesian.** Whisper menghasilkan transkrip English dulu, lalu model OPUS-MT offline menerjemahkannya ke Indonesian. Model diunduh sekali dan tetap tersimpan.
+- **Bahasa lain.** French, Spanish, dan German memakai jalur dua tahap yang sama. Opsi NLLB multilingual besar tersedia dengan peringatan ukuran dan lisensi.
+- **Tampilan dwibahasa.** Pilih asli, terjemahan, atau keduanya. Edit tetap pada teks asli agar terjemahan tidak tertimpa.
+- **Ekspor dwibahasa.** SRT, VTT, CSV, dan Markdown bisa membawa teks asli dan terjemahan sekaligus.
+- **Glosarium proyek.** Daftar nama dan istilah produk yang harus tetap utuh saat diterjemahkan.
+- **Cache terjemahan.** Segmen identik diterjemahkan sekali lalu dipakai ulang.
+- **Bahasa terdeteksi.** UI menampilkan bahasa yang terdeteksi Whisper dan bisa diganti sebelum transkripsi.
+- **Kredit model.** Manajer model mencantumkan tiap model terjemahan beserta sumber, ukuran, dan lisensinya.
+
+### Peningkatan
+
+- **Penjelasan dua tahap.** Panel pengaturan menjelaskan kenapa Indonesian butuh model kedua sementara English tetap native di Whisper.
+- **Path ONNX Runtime lokal.** Worker terjemahan memakai file WASM yang dihosting sendiri sehingga CSP ketat tetap berlaku.
+
+### Perbaikan bug
+
+- **Kegagalan terjemahan tidak diam lagi.** Progres, error, dan selesainya terjemahan kini ditampilkan di header hasil.
 ## v2.0.0
 
 Rilis tonggak: viewer offline jadi pemutar lengkap, waktu segmen bisa diedit, dan pilihan model lebih mudah dinilai.
