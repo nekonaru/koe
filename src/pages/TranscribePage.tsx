@@ -158,10 +158,12 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
   const [viewLang, setViewLang] = useState<'original' | 'translated'>('original')
   const [showBoth, setShowBoth] = useState(false)
   const [detectedLanguage, setDetectedLanguage] = useState('')
+  const [sharedTranslated, setSharedTranslated] = useState(false)
 
   const workerRef = useRef<Worker | null>(null)
   const translateWorkerRef = useRef<Worker | null>(null)
   const translateActiveRef = useRef<string | null>(null)
+  const folderInputRef = useRef<HTMLInputElement | null>(null)
   const pcmStoreRef = useRef(new Map<string, Float32Array>())
   const fileStoreRef = useRef(new Map<string, File>())
   const [pcmIds, setPcmIds] = useState<Set<string>>(new Set())
@@ -882,6 +884,8 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
       title: item.name,
       language,
       segments: item.segments,
+      translations: item.translations,
+      translationLang: item.translationLang,
       createdAt: Date.now(),
     }
     const url = await shareUrl(payload)
@@ -1028,9 +1032,17 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
               {t('projects.close')}
             </button>
           </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button type="button" onClick={() => setSharedTranslated(false)} aria-pressed={!sharedTranslated} className={['rounded-lg px-3 py-1.5 text-xs font-bold', !sharedTranslated ? 'bg-ai text-warm' : 'border border-ai/25 text-ai dark:border-warm/20 dark:text-warm'].join(' ')}>{t('translate.viewOriginal')}</button>
+            {shared.translations && (
+              <button type="button" onClick={() => setSharedTranslated(true)} aria-pressed={sharedTranslated} className={['rounded-lg px-3 py-1.5 text-xs font-bold', sharedTranslated ? 'bg-ai text-warm' : 'border border-ai/25 text-ai dark:border-warm/20 dark:text-warm'].join(' ')}>{t('translate.viewTranslated')}</button>
+            )}
+          </div>
           <div className="mt-4 space-y-1">
             {shared.segments.map((segment, index) => (
-              <p key={index} className="rounded-lg bg-white/70 px-3 py-2 text-sm text-neutral-800 dark:bg-ai/20 dark:text-warm/90">{segment.text}</p>
+              <p key={index} className="rounded-lg bg-white/70 px-3 py-2 text-sm text-neutral-800 dark:bg-ai/20 dark:text-warm/90">
+                {sharedTranslated && shared.translations?.[index] ? shared.translations[index] : segment.text}
+              </p>
             ))}
           </div>
         </section>
@@ -1075,6 +1087,28 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
           1 · {t('step1.title')}
         </h2>
         <Dropzone onFiles={addFiles} />
+        <div className="mt-2 flex justify-center">
+          <input
+            ref={folderInputRef}
+            type="file"
+            multiple
+            {...({ webkitdirectory: '', directory: '' } as Record<string, string>)}
+            className="hidden"
+            data-testid="folder-input"
+            onChange={(event) => {
+              const files = Array.from(event.target.files ?? [])
+              if (files.length > 0) addFiles(files)
+              event.target.value = ''
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => folderInputRef.current?.click()}
+            className="rounded-lg border border-ai/20 px-3 py-2 text-xs font-extrabold text-ai hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20 dark:text-warm"
+          >
+            {t('step1.addFolder')}
+          </button>
+        </div>
       </section>
 
       {/* Queue */}

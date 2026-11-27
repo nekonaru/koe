@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.2.0
+
+A polish and portability release: faster starts with templates, readable on more devices, and projects that can move between browsers.
+
+### New features
+
+- **Project templates.** Interview, lecture, podcast and meeting presets set language, model, task, format and display mode in one click.
+- **Folder import.** Add every supported file from a folder in a single step.
+- **Portable projects.** Export all projects as one JSON bundle and import it on another device.
+- **High contrast and density.** Toggle contrast, compact spacing and text size from the command palette.
+- **Shortcuts overlay.** Press ? for a keyboard reference.
+- **Bilingual share view.** A shared read-only link can switch between original and translated text.
+
+### Improvements
+
+- **Page transitions.** Navigation uses view transitions where supported and stays instant under reduced motion.
+- **Preference persistence.** Contrast, density and text size survive reloads.
+
+### Bug fixes
+
+- **No skipped transition errors.** Interrupted view transitions are handled without console errors.
 ## v2.1.0
 
 Koe can now translate a finished transcript into Indonesian and several other languages, entirely on the device.

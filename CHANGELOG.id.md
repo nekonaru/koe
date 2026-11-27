@@ -2,6 +2,27 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v2.2.0
+
+Rilis penyempurnaan dan portabilitas: mulai lebih cepat dengan template, nyaman dibaca di lebih banyak perangkat, dan proyek bisa dipindah antar browser.
+
+### Fitur baru
+
+- **Template proyek.** Preset wawancara, kuliah, podcast, dan rapat menetapkan bahasa, model, task, format, dan tampilan dalam satu klik.
+- **Impor folder.** Tambahkan semua file yang didukung dari satu folder sekaligus.
+- **Proyek portabel.** Ekspor semua proyek sebagai satu berkas JSON dan impor di perangkat lain.
+- **Kontras dan kepadatan.** Atur kontras tinggi, jarak ringkas, dan ukuran teks dari palette perintah.
+- **Overlay pintasan.** Tekan ? untuk daftar pintasan keyboard.
+- **Tampilan berbagi dwibahasa.** Tautan hanya-baca bisa beralih antara teks asli dan terjemahan.
+
+### Peningkatan
+
+- **Transisi halaman.** Navigasi memakai view transitions bila didukung dan tetap instan bila gerakan dikurangi.
+- **Preferensi tersimpan.** Kontras, kepadatan, dan ukuran teks tetap ada setelah halaman dimuat ulang.
+
+### Perbaikan bug
+
+- **Transisi terpotong tidak menghasilkan error.** View transitions yang terhenti ditangani tanpa error konsol.
 ## v2.1.0
 
 Koe kini bisa menerjemahkan transkrip selesai ke Bahasa Indonesia dan beberapa bahasa lain, seluruhnya di perangkat.

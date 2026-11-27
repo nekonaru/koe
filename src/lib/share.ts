@@ -2,6 +2,8 @@ export interface SharePayload {
   title: string
   language: string
   segments: Array<{ startMs: number; endMs: number; text: string; speaker?: number }>
+  translations?: string[]
+  translationLang?: string
   createdAt: number
 }
 

@@ -79,7 +79,7 @@
 | **Ekspor dwibahasa** | SRT, VTT, CSV, dan Markdown berisi teks asli dan terjemahan sekaligus |
 | **Salin dan unduh** | Satu klik ke clipboard, atau simpan format pilihan per file |
 | **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip, termasuk halaman viewer mandiri masing-masing |
-| **Tautan berbagi hanya-baca** | Transkrip terkompresi di dalam URL, tanpa upload atau akun |
+| **Tautan berbagi hanya-baca** | Transkrip terkompresi di dalam URL, tanpa upload atau akun; tampilan bersama bisa beralih ke terjemahan |
 | **Viewer 2.0** | HTML mandiri dengan kata karaoke, pencarian, kecepatan, bab, tema, dan cetak |
 | **Waveform dengan seek** | Waveform kanvas dengan isi progress; klik di mana pun untuk melompat |
 | **Sinkron pemutaran** | Dengarkan audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat |
@@ -111,12 +111,16 @@
 | **Inggris dan Indonesia** | Seluruh UI dalam dua bahasa, tersimpan antar sesi |
 | **Tema terang, gelap, dan sistem** | Tombol tiga posisi di header; ikut pilihan kamu atau sistem |
 | **PWA yang bisa dipasang** | Tambahkan koe ke layar utama atau peluncur aplikasi |
+| **Kontras dan kepadatan** | Atur kontras tinggi, jarak ringkas, dan ukuran teks dari palette perintah |
 | **Palette perintah** | Tekan Ctrl K untuk melompat ke aksi apa pun |
 | **Tampilan dwibahasa** | Pilih asli, terjemahan, atau keduanya, dengan glosarium proyek |
+| **Proyek portabel** | Ekspor dan impor semua proyek sebagai satu berkas JSON |
 | **Urungkan dan ulangi** | Batalkan edit transkrip, geser timestamp, dan pembersihan teks |
 | **Pemangkasan segmen** | Edit waktu mulai dan selesai segmen di mode fokus |
 | **Cetak transkrip** | Tata letak cetak bersih dari header hasil |
 | **Navigasi mobile** | Navigasi ringkas dan kontrol yang nyaman disentuh |
+| **Template** | Mulai wawancara, kuliah, podcast, atau rapat dengan pengaturan siap pakai |
+| **Impor folder** | Tambahkan semua file dalam satu folder sekaligus |
 
 ### Privasi
 

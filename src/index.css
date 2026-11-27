@@ -59,6 +59,39 @@ body {
   top: var(--koe-space-2);
 }
 
+/* Density and contrast preferences. */
+.koe-compact [class*='px-'] { padding-inline: 0.6em; }
+.koe-compact [class*='py-'] { padding-block: 0.5em; }
+.koe-contrast {
+  --color-coral: #d63a12;
+  --color-ai: #101b3d;
+  --koe-focus: #000000;
+}
+.koe-contrast body {
+  background: #ffffff;
+  color: #000000;
+}
+.dark.koe-contrast body {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* Page transitions are opt-in under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: 180ms ease both koe-fade-out;
+  }
+  ::view-transition-new(root) {
+    animation: 220ms ease both koe-fade-in;
+  }
+}
+@keyframes koe-fade-out {
+  to { opacity: 0; }
+}
+@keyframes koe-fade-in {
+  from { opacity: 0; }
+}
+
 /* Motion is opt-in. The final state is always rendered without it. */
 @media (prefers-reduced-motion: no-preference) {
   .koe-enter {

@@ -2,6 +2,8 @@ import { useMemo } from 'react'
 import { useI18n } from '../i18n/useI18n'
 import { formatBytes } from '../lib/models'
 import type { Project } from '../lib/projects'
+import type { TranscriptTemplate } from '../lib/templates'
+import { TEMPLATES } from '../lib/templates'
 
 function formatDate(timestamp: number, locale: string): string {
   try {
@@ -35,11 +37,13 @@ export function HomePage({
   storage,
   onOpen,
   onNew,
+  onTemplate,
 }: {
   projects: Project[]
   storage: { usage: number; quota: number }
   onOpen: (project: Project) => void
   onNew: () => void
+  onTemplate: (template: TranscriptTemplate) => void
 }) {
   const { t, locale } = useI18n()
   const recent = useMemo(() => projects.slice(0, 6), [projects])
@@ -72,6 +76,24 @@ export function HomePage({
           </div>
         </div>
         <div className="pointer-events-none absolute -right-16 -top-20 h-64 w-64 rounded-full bg-coral/10 blur-2xl dark:bg-coral/5" />
+      </section>
+
+      <section className="mt-8" aria-labelledby="templates-title">
+        <h2 id="templates-title" className="mb-3 text-xs font-black uppercase tracking-widest text-ai/70 dark:text-warm/70">{t('home.templates')}</h2>
+        <ul className="koe-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {TEMPLATES.map((template) => (
+            <li key={template.id}>
+              <button
+                type="button"
+                onClick={() => onTemplate(template)}
+                className="h-full w-full rounded-xl border border-ai/15 bg-white/70 p-4 text-left transition hover:border-coral/60 hover:bg-white focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/10 dark:bg-ai/20 dark:hover:bg-ai/30"
+              >
+                <p className="text-sm font-extrabold text-ai dark:text-warm">{t(`templates.${template.id}`)}</p>
+                <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{t(`templates.${template.id}Desc`)}</p>
+              </button>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="mt-8" aria-labelledby="recent-title">

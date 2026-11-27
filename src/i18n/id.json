@@ -1,4 +1,4 @@
-{
+﻿{
     "app":  {
                 "name":  "Koe",
                 "tagline":  "Audio dan video ke teks, gratis dan privat",
@@ -24,7 +24,8 @@
                   "duration":  "Durasi",
                   "size":  "Ukuran",
                   "remove":  "Hapus file",
-                  "pasteHint":  "atau tempel file dengan Ctrl+V"
+                  "pasteHint":  "atau tempel file dengan Ctrl+V",
+                  "addFolder":  "Tambah folder"
               },
     "step2":  {
                   "title":  "Pengaturan",
@@ -116,7 +117,7 @@
                   "unlimitedTitle":  "Gratis dan tanpa batas",
                   "unlimitedBody":  "Tanpa kuota, tanpa langganan, tanpa biaya per menit. Koe open source di bawah lisensi MIT.",
                   "nameTitle":  "Arti nama",
-                  "nameBody":  "Koe (Ã¥Â£Â°) berarti suara dalam bahasa Jepang. Koe adalah saudara yang lebih ringan dari Kikoe, alat baris perintah.",
+                  "nameBody":  "Koe (ÃƒÂ¥Ã‚Â£Ã‚Â°) berarti suara dalam bahasa Jepang. Koe adalah saudara yang lebih ringan dari Kikoe, alat baris perintah.",
                   "licensesTitle":  "Lisensi",
                   "licensesBody":  "Koe berlisensi MIT. Koe dibangun di atas Whisper dari OpenAI (MIT), ONNX Runtime Web (MIT), Transformers.js dari Hugging Face (Apache-2.0), React (MIT), dan Tailwind CSS (MIT). Font: Nunito (SIL Open Font License), di-host sendiri."
               },
@@ -170,7 +171,13 @@
                    "cancel":  "Batal",
                    "save":  "Simpan",
                    "delete":  "Hapus",
-                   "loading":  "Memuat"
+                   "loading":  "Memuat",
+                   "shortcuts":  "Pintasan keyboard",
+                   "cmdPlayback":  "Aktifkan atau hentikan pemutaran",
+                   "cmdContrast":  "Aktifkan kontras tinggi",
+                   "cmdDensity":  "Aktifkan kepadatan ringkas",
+                   "cmdFontUp":  "Perbesar teks",
+                   "cmdFontDown":  "Perkecil teks"
                },
     "guide":  {
                   "title":  "Cara kerja koe",
@@ -219,7 +226,7 @@
                           }
               },
     "results":  {
-                    "stats":  "{words} kata Â· {segments} segmen",
+                    "stats":  "{words} kata Ã‚Â· {segments} segmen",
                     "searchPlaceholder":  "Cari di transkrip",
                     "searchNoMatches":  "Tidak ada yang cocok",
                     "searchMatches":  "{count} kecocokan",
@@ -268,7 +275,9 @@
                      "search":  "Cari proyek",
                      "storage":  "Penyimpanan terpakai",
                      "all":  "Semua proyek",
-                     "open":  "Buka"
+                     "open":  "Buka",
+                     "exportAll":  "Ekspor semua",
+                     "import":  "Impor"
                  },
     "exports":  {
                     "includeMetadata":  "Sertakan pengaturan dan metadata versi",
@@ -297,7 +306,8 @@
                  "open":  "Buka",
                  "title":  "Audio kamu, transkrip kamu",
                  "tipBody":  "File tidak pernah meninggalkan perangkat. Tiny dan Base jalan offline setelah muat pertama.",
-                 "empty":  "Belum ada proyek"
+                 "empty":  "Belum ada proyek",
+                 "templates":  "Mulai dari template"
              },
     "device":  {
                    "unknown":  "Tidak diketahui",
@@ -371,5 +381,15 @@
                       "runAgain":  "Jalankan terjemahan lagi",
                       "twoStageNote":  "Whisper menghasilkan English dulu, lalu model offline terpisah menerjemahkan ke bahasa pilihan.",
                       "viewTranslated":  "Terjemahan"
+                  },
+    "templates":  {
+                      "interview":  "Wawancara",
+                      "interviewDesc":  "Bicara Indonesian, sorot kata, teks polos",
+                      "lecture":  "Kuliah",
+                      "lectureDesc":  "Bicara English panjang, model seimbang, subtitle",
+                      "podcast":  "Podcast",
+                      "podcastDesc":  "Bahasa campuran, transkrip English, Markdown",
+                      "meeting":  "Rapat",
+                      "meetingDesc":  "Diskusi Indonesian, ekspor spreadsheet"
                   }
 }
