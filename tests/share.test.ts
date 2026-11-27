@@ -55,4 +55,10 @@ describe('shareUrl', () => {
     const encoded = url.slice(url.indexOf('#share=') + 7)
     expect(await decodeShare(encoded)).toEqual(payload)
   })
+
+  it('keeps bilingual translations in the link', async () => {
+    const bilingual: SharePayload = { ...payload, translations: ['Halo dunia'], translationLang: 'id' }
+    const encoded = await encodeShare(bilingual)
+    expect(await decodeShare(encoded)).toEqual(bilingual)
+  })
 })

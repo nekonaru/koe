@@ -340,3 +340,17 @@ Dieksekusi pada 2026-11-28.
 - **Teks dan ekspor.** `src/lib/translate.ts` berisi daftar target, pemetaan FLORES, pemotongan teks panjang, glosarium, dan cache localStorage. `src/format/format.ts` mendapat `toBilingualSrt`, `toBilingualVtt`, `toBilingualCsv`, dan `toBilingualMarkdown`.
 - **Tampilan.** `TranscriptView` bisa menampilkan asli, terjemahan, atau keduanya. Edit dinonaktifkan saat terjemahan ditampilkan supaya hasil model tidak tertimpa.
 - **Batasan.** Terjemahan bergantung pada kualitas model OPUS-MT, bukan terjemahan manusia. NLLB tidak dipakai untuk kerja komersial tanpa peninjauan lisensi.
+
+
+## Bagian 24: Catatan Implementasi v2.2.0
+
+Dieksekusi pada 2026-11-28.
+
+- **Template.** `src/lib/templates.ts` berisi empat preset. Beranda menampilkan kartu template. Menerapkan template menulis `koe-settings-v1` lalu memuat ulang `TranscribePage` lewat perubahan key agar state pengaturan benar-benar segar.
+- **Impor folder.** Input file dengan atribut `webkitdirectory` ditambahkan di sebelah dropzone. File dikirim ke `addFiles` yang sama dengan drag and drop.
+- **Proyek portabel.** Halaman Proyek mendapat tombol ekspor dan impor JSON. Ekspor memuat seluruh array proyek dari IndexedDB. Impor hanya menerima objek dengan `id` berupa string dan menimpa proyek dengan id sama.
+- **Preferensi tampilan.** Kontras tinggi, kepadatan ringkas, dan skala teks disimpan di localStorage dan diterapkan ke root dokumen. Command palette mendapat aksi untuk setiap preferensi.
+- **Transisi halaman.** `navigate` membungkus perubahan halaman dengan `document.startViewTransition` ketika tersedia dan gerakan tidak dikurangi. `transition.finished` ditangani supaya transisi yang terpotong tidak memunculkan error konsol.
+- **Overlay pintasan.** Tombol ? membuka dialog native berisi daftar pintasan.
+- **Berbagi dwibahasa.** Payload tautan menyimpan `translations` dan `translationLang`. Tampilan bersama bisa beralih antara teks asli dan terjemahan tanpa mengubah proyek asli.
+- **Batasan.** Enkripsi passphrase untuk tautan berbagi belum diimplementasikan. Template memakai nama dan deskripsi bahasa Inggris yang diterjemahkan lewat katalog i18n EN/ID.

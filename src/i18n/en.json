@@ -24,7 +24,8 @@
                   "duration":  "Duration",
                   "size":  "Size",
                   "remove":  "Remove file",
-                  "pasteHint":  "or paste a file with Ctrl+V"
+                  "pasteHint":  "or paste a file with Ctrl+V",
+                  "addFolder":  "Add folder"
               },
     "step2":  {
                   "title":  "Settings",
@@ -170,7 +171,13 @@
                    "cancel":  "Cancel",
                    "save":  "Save",
                    "delete":  "Delete",
-                   "loading":  "Loading"
+                   "loading":  "Loading",
+                   "shortcuts":  "Keyboard shortcuts",
+                   "cmdPlayback":  "Toggle playback",
+                   "cmdContrast":  "Toggle high contrast",
+                   "cmdDensity":  "Toggle compact density",
+                   "cmdFontUp":  "Increase text size",
+                   "cmdFontDown":  "Decrease text size"
                },
     "guide":  {
                   "title":  "How koe works",
@@ -268,7 +275,9 @@
                      "search":  "Search projects",
                      "storage":  "Storage used",
                      "all":  "All projects",
-                     "open":  "Open"
+                     "open":  "Open",
+                     "exportAll":  "Export all",
+                     "import":  "Import"
                  },
     "exports":  {
                     "includeMetadata":  "Include settings and version metadata",
@@ -297,7 +306,8 @@
                  "open":  "Open",
                  "title":  "Your audio, your transcript",
                  "tipBody":  "Files never leave your device. Tiny and Base work offline after the first load.",
-                 "empty":  "No projects yet"
+                 "empty":  "No projects yet",
+                 "templates":  "Start from a template"
              },
     "device":  {
                    "unknown":  "Unknown",
@@ -371,5 +381,15 @@
                       "runAgain":  "Run translation again",
                       "twoStageNote":  "Whisper first produces English, then a separate offline model translates to the chosen language.",
                       "viewTranslated":  "Translated"
+                  },
+    "templates":  {
+                      "interview":  "Interview",
+                      "interviewDesc":  "Indonesian speech, word highlighting, plain text",
+                      "lecture":  "Lecture",
+                      "lectureDesc":  "Long English talk, balanced model, subtitles",
+                      "podcast":  "Podcast",
+                      "podcastDesc":  "Mixed languages, English transcript, Markdown",
+                      "meeting":  "Meeting",
+                      "meetingDesc":  "Indonesian discussion, spreadsheet export"
                   }
 }

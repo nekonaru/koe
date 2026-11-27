@@ -23,6 +23,8 @@ export function ProjectsPage({
   onFavorite,
   onDelete,
   onToggleAudio,
+  onExportAll,
+  onImport,
 }: {
   projects: Project[]
   storage: { usage: number; quota: number }
@@ -32,6 +34,8 @@ export function ProjectsPage({
   onFavorite: (id: string) => void
   onDelete: (id: string) => void
   onToggleAudio: (id: string, keep: boolean) => void
+  onExportAll: () => void
+  onImport: (file: File) => void
 }) {
   const { t, locale } = useI18n()
   const [query, setQuery] = useState('')
@@ -80,6 +84,13 @@ export function ProjectsPage({
         >
           {t('projects.favorites')}
         </button>
+        <button type="button" onClick={onExportAll} className="rounded-xl border border-ai/20 px-4 py-2.5 text-xs font-extrabold text-ai hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20 dark:text-warm">
+          {t('projects.exportAll')}
+        </button>
+        <label className="rounded-xl border border-ai/20 px-4 py-2.5 text-xs font-extrabold text-ai hover:bg-ai/5 focus-within:ring-2 focus-within:ring-coral/50 dark:border-warm/20 dark:text-warm">
+          {t('projects.import')}
+          <input type="file" accept="application/json" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) onImport(file) }} data-testid="import-projects" />
+        </label>
       </div>
 
       {visible.length === 0 ? (

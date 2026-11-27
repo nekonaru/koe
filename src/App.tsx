@@ -10,11 +10,22 @@ import { HomePage } from './components/HomePage'
 import { ProjectsPage } from './components/ProjectsPage'
 import { CommandPalette, useCommandPaletteHotkey, type PaletteAction } from './components/CommandPalette'
 import { OnboardingTip, hasSeenTip } from './components/Onboarding'
+import { ShortcutsDialog } from './components/ShortcutsDialog'
+import { TEMPLATES } from './lib/templates'
 import { deleteAudio, deleteProject, estimateStorage, listProjects, saveProject, type Project } from './lib/projects'
+import { flushSync } from 'react-dom'
 
 type Page = 'home' | 'transcribe' | 'projects' | 'about' | 'help'
 type Theme = 'light' | 'dark' | 'system'
 const THEME_STORAGE_KEY = 'koe-theme-v2'
+
+function storedValue(key: string, fallback: string): string {
+  try {
+    return localStorage.getItem(key) ?? fallback
+  } catch {
+    return fallback
+  }
+}
 
 export interface RestoreRequest {
   project: Project
@@ -94,6 +105,11 @@ function Shell() {
   const [storage, setStorage] = useState({ usage: 0, quota: 0 })
   const [restore, setRestore] = useState<RestoreRequest | null>(null)
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [contrast, setContrast] = useState(() => storedValue('koe-contrast-v1', '0') === '1')
+  const [density, setDensity] = useState<'comfortable' | 'compact'>(() => localStorage.getItem('koe-density-v1') === 'compact' ? 'compact' : 'comfortable')
+  const [fontScale, setFontScale] = useState(() => Number(storedValue('koe-font-v1', '100')) || 100)
+  const [settingsToken, setSettingsToken] = useState(0)
   const [showTip, setShowTip] = useState(() => !hasSeenTip())
 
   const refresh = useCallback(async () => {
@@ -107,6 +123,41 @@ function Shell() {
     // oxlint-disable-next-line react/set-state-in-effect
     void refresh()
   }, [refresh])
+
+  const navigate = useCallback((next: Page) => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (typeof document.startViewTransition === 'function' && !reduce) {
+      const transition = document.startViewTransition(() => flushSync(() => setPage(next)))
+      void transition.finished.catch(() => undefined)
+    } else {
+      setPage(next)
+    }
+  }, [])
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.fontSize = `${fontScale}%`
+    root.classList.toggle('koe-compact', density === 'compact')
+    root.classList.toggle('koe-contrast', contrast)
+    try {
+      localStorage.setItem('koe-contrast-v1', contrast ? '1' : '0')
+      localStorage.setItem('koe-density-v1', density)
+      localStorage.setItem('koe-font-v1', String(fontScale))
+    } catch {
+      // Best effort only.
+    }
+  }, [contrast, density, fontScale])
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key === '?' && !(event.target instanceof HTMLInputElement)) {
+        event.preventDefault()
+        setShortcutsOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
 
   // Track the system theme while the user selected "system".
   useEffect(() => {
@@ -137,13 +188,13 @@ function Shell() {
 
   const startNew = useCallback(() => {
     setRestore(null)
-    setPage('transcribe')
-  }, [])
+    navigate('transcribe')
+  }, [navigate])
 
   const openProject = useCallback((project: Project) => {
     setRestore({ project, token: Date.now() })
-    setPage('transcribe')
-  }, [])
+    navigate('transcribe')
+  }, [navigate])
 
   const toggleTheme = useCallback(() => {
     setTheme((current) => (current === 'light' ? 'dark' : current === 'dark' ? 'system' : 'light'))
@@ -151,18 +202,43 @@ function Shell() {
 
   const toggleLanguage = useCallback(() => setLocale((locale === 'en' ? 'id' : 'en') as Locale), [locale, setLocale])
 
+  const applyTemplate = useCallback((template: (typeof TEMPLATES)[number]) => {
+    try {
+      const raw = localStorage.getItem('koe-settings-v1')
+      const current = raw ? (JSON.parse(raw) as Record<string, unknown>) : {}
+      localStorage.setItem('koe-settings-v1', JSON.stringify({
+        ...current,
+        language: template.language,
+        model: template.model,
+        task: template.task,
+        outputFormat: template.format,
+        displayMode: template.displayMode,
+        translateTarget: 'id',
+      }))
+    } catch {
+      // Settings are optional; the app still opens with defaults.
+    }
+    setSettingsToken((token) => token + 1)
+    navigate('transcribe')
+  }, [navigate])
+
   const paletteActions: PaletteAction[] = [
     { id: 'new', label: t('common.cmdNew'), hint: 'Ctrl K', run: startNew },
-    { id: 'home', label: t('app.navHome'), run: () => setPage('home') },
-    { id: 'projects', label: t('app.navProjects'), run: () => setPage('projects') },
-    { id: 'transcribe', label: t('app.nav.transcribe'), run: () => setPage('transcribe') },
-    { id: 'about', label: t('app.nav.about'), run: () => setPage('about') },
-    { id: 'help', label: t('app.nav.help'), run: () => setPage('help') },
+    { id: 'home', label: t('app.navHome'), run: () => navigate('home') },
+    { id: 'projects', label: t('app.navProjects'), run: () => navigate('projects') },
+    { id: 'transcribe', label: t('app.nav.transcribe'), run: () => navigate('transcribe') },
+    { id: 'about', label: t('app.nav.about'), run: () => navigate('about') },
+    { id: 'help', label: t('app.nav.help'), run: () => navigate('help') },
     { id: 'theme', label: t('common.cmdTheme'), run: toggleTheme },
     { id: 'language', label: t('common.cmdLanguage'), run: toggleLanguage },
     { id: 'search', label: t('common.cmdSearch'), hint: '/', run: () => window.dispatchEvent(new Event('koe:focus-search')) },
     { id: 'copy', label: t('common.cmdCopy'), run: () => window.dispatchEvent(new Event('koe:copy-transcript')) },
     { id: 'download', label: t('common.cmdDownload'), run: () => window.dispatchEvent(new Event('koe:download-transcript')) },
+    { id: 'shortcuts', label: t('common.shortcuts'), hint: '?', run: () => setShortcutsOpen(true) },
+    { id: 'contrast', label: t('common.cmdContrast'), run: () => setContrast((current) => !current) },
+    { id: 'density', label: t('common.cmdDensity'), run: () => setDensity((current) => (current === 'compact' ? 'comfortable' : 'compact')) },
+    { id: 'fontUp', label: t('common.cmdFontUp'), run: () => setFontScale((current) => Math.min(125, current + 10)) },
+    { id: 'fontDown', label: t('common.cmdFontDown'), run: () => setFontScale((current) => Math.max(90, current - 10)) },
   ]
   useCommandPaletteHotkey(() => setPaletteOpen(true))
 
@@ -185,6 +261,30 @@ function Shell() {
     await refresh()
   }, [projects, refresh])
 
+  const exportProjects = useCallback(async () => {
+    const list = await listProjects()
+    const blob = new Blob([JSON.stringify({ version: 1, exportedAt: Date.now(), projects: list }, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'koe-projects.json'
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }, [])
+
+  const importProjects = useCallback(async (file: File) => {
+    try {
+      const parsed = JSON.parse(await file.text()) as { projects?: Project[] }
+      if (!Array.isArray(parsed.projects)) return
+      for (const project of parsed.projects) {
+        if (project && typeof project.id === 'string') await saveProject(project)
+      }
+      await refresh()
+    } catch {
+      // Invalid files are ignored; existing projects stay intact.
+    }
+  }, [refresh])
+
   const removeProject = useCallback(async (id: string) => {
     await deleteProject(id)
     await deleteAudio(id)
@@ -198,7 +298,7 @@ function Shell() {
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4">
           <button
             type="button"
-            onClick={() => setPage('home')}
+            onClick={() => navigate('home')}
             className="flex items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-coral/50"
             aria-label="Koe"
           >
@@ -211,7 +311,7 @@ function Shell() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setPage(item.id)}
+                onClick={() => navigate(item.id)}
                 aria-current={page === item.id ? 'page' : undefined}
                 className={[
                   'rounded-xl px-3 py-2 text-sm font-extrabold outline-none transition focus-visible:ring-2 focus-visible:ring-coral/50',
@@ -283,7 +383,7 @@ function Shell() {
             <button
               key={item.id}
               type="button"
-              onClick={() => setPage(item.id)}
+              onClick={() => navigate(item.id)}
               aria-current={page === item.id ? 'page' : undefined}
               className={[
                 'min-w-11 flex-1 rounded-lg px-2 py-2 text-[11px] font-extrabold outline-none focus-visible:ring-2 focus-visible:ring-coral/50',
@@ -298,10 +398,10 @@ function Shell() {
 
       <div id="main-content" className="flex-1" tabIndex={-1}>
         {page === 'home' && (
-          <HomePage projects={projects} storage={storage} onOpen={openProject} onNew={startNew} />
+          <HomePage projects={projects} storage={storage} onOpen={openProject} onNew={startNew} onTemplate={applyTemplate} />
         )}
         {page === 'transcribe' && (
-          <TranscribePage restore={restore} onSaved={handleSaved} />
+          <TranscribePage key={settingsToken} restore={restore} onSaved={handleSaved} />
         )}
         {page === 'projects' && (
           <ProjectsPage
@@ -315,6 +415,8 @@ function Shell() {
               if (project) void updateProject({ id, favorite: !project.favorite })
             }}
             onDelete={(id) => void removeProject(id)}
+            onExportAll={() => void exportProjects()}
+            onImport={(file) => void importProjects(file)}
             onToggleAudio={(id, keepAudio) => {
               void (async () => {
                 await updateProject({ id, keepAudio })
@@ -342,6 +444,7 @@ function Shell() {
       </footer>
 
       <CommandPalette key={paletteOpen ? 'palette-open' : 'palette-closed'} open={paletteOpen} actions={paletteActions} onClose={() => setPaletteOpen(false)} />
+      {shortcutsOpen && <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />}
       {showTip && <OnboardingTip onDismiss={() => setShowTip(false)} />}
     </div>
   )

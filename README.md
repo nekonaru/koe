@@ -79,7 +79,7 @@
 | **Bilingual export** | SRT, VTT, CSV and Markdown with original and translated text together |
 | **Copy and download** | One click to clipboard, or save the chosen format per file |
 | **ZIP export** | Download every finished transcript in one archive, including each standalone viewer page |
-| **Read-only share link** | A compressed transcript carried in a URL, with no upload or account |
+| **Read-only share link** | A compressed transcript carried in a URL, with no upload or account; shared views can switch to the translation |
 | **Viewer 2.0** | Standalone HTML with karaoke words, search, speed, chapters, themes and print |
 | **Waveform with seek** | Canvas waveform with progress fill; click anywhere to jump the player |
 | **Playback sync** | Listen to the audio with the current segment highlighted; click any timestamp to jump |
@@ -110,12 +110,16 @@
 | **English and Indonesian** | Full UI in both languages, remembered between sessions |
 | **Light, dark, and system themes** | Three-way toggle in the header; follows your choice or the system |
 | **Installable PWA** | Add koe to your home screen or app launcher |
+| **High contrast and density** | Toggle contrast, compact spacing and text size from the command palette |
 | **Command palette** | Press Ctrl K to jump to any action |
 | **Bilingual view** | Switch between original, translated or both, with a project glossary |
+| **Portable projects** | Export and import all projects as one JSON bundle |
 | **Undo and redo** | Revert transcript edits, timestamp shifts and cleanup |
 | **Segment trimming** | Edit segment start and end times in focus mode |
 | **Print transcript** | A clean print layout from the result header |
 | **Mobile navigation** | Compact navigation and touch friendly controls |
+| **Templates** | Start an interview, lecture, podcast or meeting with preset settings |
+| **Folder import** | Add every file from a folder in one step |
 
 ### Privacy
 
