@@ -19,6 +19,20 @@ import {
   type TranscriptSegment,
 } from '../format/format'
 import { encodeWav, bytesToBase64 } from '../audio/wav'
+import { initHistory, commit, undo, redo, canUndo, canRedo, type History } from '../lib/history'
+import {
+  buildChapters,
+  cleanupTranscript,
+  detectRepeats,
+  findReplaceSegments,
+  toCaptionLines,
+  toCleanParagraphs,
+  toMarkdown,
+} from '../lib/textTools'
+import { decodeShare, shareUrl, type SharePayload } from '../lib/share'
+import { detectDevice, isSaveData, type DeviceProfile } from '../lib/device'
+import { getAudio, putAudio, saveProject, type Project } from '../lib/projects'
+import type { RestoreRequest } from '../App'
 
 type ItemStatus = 'decoding' | 'ready' | 'processing' | 'done' | 'error'
 
@@ -37,6 +51,9 @@ interface QueueItem {
   errorCode: KoeErrorCode | null
   detail: string | null
   startedAt: number | null
+  notes: string
+  keepAudio: boolean
+  createdAt: number
 }
 
 interface DownloadState {
@@ -46,6 +63,35 @@ interface DownloadState {
 }
 
 const idleDownload: DownloadState = { active: false, file: '', percent: 0 }
+
+const SETTINGS_KEY = 'koe-settings-v1'
+
+interface SavedSettings {
+  language?: string
+  model?: ModelId
+  task?: Task
+  displayMode?: 'lines' | 'karaoke'
+  outputFormat?: OutputFormat
+  keepAudio?: boolean
+}
+
+function loadSettings(): SavedSettings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY)
+    return raw ? (JSON.parse(raw) as SavedSettings) : {}
+  } catch {
+    return {}
+  }
+}
+
+function persistSettings(patch: SavedSettings) {
+  try {
+    const next = { ...loadSettings(), ...patch }
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(next))
+  } catch {
+    // Best effort only.
+  }
+}
 
 function errorText(code: KoeErrorCode | null, t: (key: string) => string): string {
   if (!code) return t('errors.unknown')
@@ -57,22 +103,37 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
 
-export function TranscribePage() {
+export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest | null; onSaved?: () => void }) {
   const { t, locale } = useI18n()
   const supported = typeof WebAssembly === 'object'
   const crossOriginIsolated = typeof globalThis.crossOriginIsolated !== 'undefined' && globalThis.crossOriginIsolated
   const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
 
+  const initial = useMemo(() => loadSettings(), [])
   const [items, setItems] = useState<QueueItem[]>([])
-  const [language, setLanguage] = useState('indonesian')
-  const [model, setModel] = useState<ModelId>(DEFAULT_MODEL)
-  const [task, setTask] = useState<Task>('transcribe')
-  const [displayMode, setDisplayMode] = useState<'lines' | 'karaoke'>('lines')
-  const [outputFormat, setOutputFormat] = useState<OutputFormat>('txt')
+  const [language, setLanguage] = useState(initial.language ?? 'indonesian')
+  const [model, setModel] = useState<ModelId>(initial.model ?? DEFAULT_MODEL)
+  const [task, setTask] = useState<Task>(initial.task ?? 'transcribe')
+  const [displayMode, setDisplayMode] = useState<'lines' | 'karaoke'>(initial.displayMode ?? 'lines')
+  const [outputFormat, setOutputFormat] = useState<OutputFormat>(initial.outputFormat ?? 'txt')
+  const [keepAudio, setKeepAudio] = useState(initial.keepAudio ?? false)
   const [modelReady, setModelReady] = useState<Partial<Record<ModelId, boolean>>>({})
   const [download, setDownload] = useState<DownloadState>(idleDownload)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
+  const [history, setHistory] = useState<Record<string, History<TranscriptSegment[]>>>({})
+  const [device, setDevice] = useState<DeviceProfile | null>(null)
+  const [shared, setShared] = useState<SharePayload | null>(null)
+  const [shareLink, setShareLink] = useState('')
+  const [focusId, setFocusId] = useState<string | null>(null)
+  const [preset, setPreset] = useState<'plain' | 'markdown' | 'captions' | 'clean'>('plain')
+  const [find, setFind] = useState('')
+  const [replaceText, setReplaceText] = useState('')
+  const [useRegex, setUseRegex] = useState(false)
+  const [caseSensitive, setCaseSensitive] = useState(false)
+  const [chapterGap, setChapterGap] = useState(4)
+  const [clipRange, setClipRange] = useState<{ startMs: number; endMs: number } | null>(null)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
 
   const workerRef = useRef<Worker | null>(null)
   const pcmStoreRef = useRef(new Map<string, Float32Array>())
@@ -84,6 +145,7 @@ export function TranscribePage() {
   const pendingInitModelRef = useRef<ModelId | null>(null)
   const chainRef = useRef(false)
   const itemsRef = useRef(items)
+  const playheadRef = useRef(0)
   const modelRef = useRef(model)
   useEffect(() => {
     itemsRef.current = items
@@ -360,6 +422,9 @@ export function TranscribePage() {
         segments: [],
         errorCode: null,
         startedAt: null,
+        notes: '',
+        keepAudio,
+        createdAt: Date.now(),
       }))
       setItems((current) => [...current, ...created])
       for (const [index, file] of files.entries()) {
@@ -368,7 +433,7 @@ export function TranscribePage() {
         decodeItem(id, file)
       }
     },
-    [decodeItem],
+    [decodeItem, keepAudio],
   )
 
   // Paste files directly from the clipboard (for example right after copying
@@ -414,6 +479,130 @@ export function TranscribePage() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  // Settings follow the user between sessions.
+  useEffect(() => {
+    persistSettings({ language, model, task, displayMode, outputFormat, keepAudio })
+  }, [language, model, task, displayMode, outputFormat, keepAudio])
+
+  useEffect(() => {
+    void detectDevice().then(setDevice)
+  }, [])
+
+  // A shared link opens a read-only view without uploading anything.
+  useEffect(() => {
+    const hash = window.location.hash
+    if (!hash.startsWith('#share=')) return
+    void decodeShare<SharePayload>(hash.slice(7)).then(setShared)
+  }, [])
+
+  // Open a saved project from Home or Projects.
+  useEffect(() => {
+    if (!restore) return
+    const project = restore.project
+    const item: QueueItem = {
+      id: project.id,
+      name: project.name,
+      sizeBytes: project.sizeBytes,
+      status: project.segments.length > 0 ? 'done' : 'ready',
+      durationSec: project.durationSec,
+      percent: project.segments.length > 0 ? 100 : 0,
+      window: 0,
+      totalWindows: 0,
+      segments: project.segments,
+      words: project.words,
+      errorCode: null,
+      detail: null,
+      startedAt: null,
+      notes: project.notes,
+      keepAudio: project.keepAudio,
+      createdAt: project.createdAt,
+    }
+    // Restore the saved project into the working queue.
+    // oxlint-disable-next-line react/set-state-in-effect
+    setItems([item])
+    setLanguage(project.language)
+    setModel(project.model as ModelId)
+    setTask(project.task)
+    setOutputFormat(project.format as OutputFormat)
+    setDisplayMode(project.displayMode)
+    setHistory({ [item.id]: initHistory(project.segments) })
+    void getAudio(project.id).then((blob) => {
+      if (!blob) return
+      void decodeToPcm16kMono(new File([blob], project.name, { type: 'audio/wav' }))
+        .then(({ pcm }) => {
+          pcmStoreRef.current.set(item.id, pcm)
+          setPcmIds((current) => new Set(current).add(item.id))
+        })
+        .catch(() => undefined)
+    })
+  }, [restore])
+
+  const onSavedRef = useRef(onSaved)
+  useEffect(() => {
+    onSavedRef.current = onSaved
+  }, [onSaved])
+
+  // Debounced autosave of every finished item. Audio is only stored when the
+  // project opts in, because a long recording can be large.
+  useEffect(() => {
+    const done = items.filter((item) => item.status === 'done')
+    if (done.length === 0) return
+    // Reflect that a save has started.
+    // oxlint-disable-next-line react/set-state-in-effect
+    setSaveState('saving')
+    const timer = window.setTimeout(() => {
+      void Promise.all(done.map(async (item) => {
+        const project: Project = {
+          id: item.id,
+          name: item.name,
+          createdAt: item.createdAt,
+          updatedAt: Date.now(),
+          language,
+          model,
+          task,
+          format: outputFormat,
+          displayMode,
+          segments: item.segments,
+          words: item.words,
+          notes: item.notes,
+          favorite: false,
+          durationSec: item.durationSec,
+          sizeBytes: item.sizeBytes,
+          keepAudio: item.keepAudio,
+        }
+        await saveProject(project)
+        if (item.keepAudio) {
+          const pcm = pcmStoreRef.current.get(item.id)
+          if (pcm) {
+            const wav = encodeWav(pcm, 16000)
+            const bytes = new Uint8Array(wav.byteLength)
+            bytes.set(wav)
+            await putAudio(item.id, new Blob([bytes], { type: 'audio/wav' }))
+          }
+        }
+      })).then(() => {
+        setSaveState('saved')
+        onSavedRef.current?.()
+      })
+    }, 700)
+    return () => window.clearTimeout(timer)
+  }, [items, language, model, task, outputFormat, displayMode])
+
+  // Global commands from the palette.
+  useEffect(() => {
+    const focusSearch = () => document.querySelector<HTMLElement>('[data-testid="transcript-search"]')?.focus()
+    const copyFirst = () => document.querySelector<HTMLButtonElement>('[data-testid="copy-transcript"]')?.click()
+    const downloadFirst = () => document.querySelector<HTMLButtonElement>('[data-testid="download-transcript"]')?.click()
+    window.addEventListener('koe:focus-search', focusSearch)
+    window.addEventListener('koe:copy-transcript', copyFirst)
+    window.addEventListener('koe:download-transcript', downloadFirst)
+    return () => {
+      window.removeEventListener('koe:focus-search', focusSearch)
+      window.removeEventListener('koe:copy-transcript', copyFirst)
+      window.removeEventListener('koe:download-transcript', downloadFirst)
+    }
   }, [])
 
   const cancelItem = useCallback((item: QueueItem) => {
@@ -520,11 +709,108 @@ export function TranscribePage() {
     URL.revokeObjectURL(url)
   }, [outputFormat])
 
+  const updateSegments = useCallback((id: string, next: TranscriptSegment[]) => {
+    setHistory((current) => {
+      const base = current[id] ?? initHistory(itemsRef.current.find((entry) => entry.id === id)?.segments ?? [])
+      return { ...current, [id]: commit(base, next) }
+    })
+    setItems((current) => current.map((entry) => (entry.id === id ? { ...entry, segments: next } : entry)))
+  }, [])
+
+  const undoSegments = useCallback((id: string) => {
+    const next = undo(history[id] ?? initHistory([]))
+    setHistory((current) => ({ ...current, [id]: next }))
+    setItems((entries) => entries.map((entry) => (entry.id === id ? { ...entry, segments: next.present } : entry)))
+  }, [history])
+
+  const redoSegments = useCallback((id: string) => {
+    const next = redo(history[id] ?? initHistory([]))
+    setHistory((current) => ({ ...current, [id]: next }))
+    setItems((entries) => entries.map((entry) => (entry.id === id ? { ...entry, segments: next.present } : entry)))
+  }, [history])
+
+  const presetText = useCallback((item: QueueItem): string => {
+    if (preset === 'markdown') return toMarkdown(item.segments, item.name, buildChapters(item.segments, chapterGap * 1000))
+    if (preset === 'captions') return toCaptionLines(item.segments)
+    if (preset === 'clean') return toCleanParagraphs(item.segments)
+    return formatTranscript(item.segments, outputFormat)
+  }, [preset, chapterGap, outputFormat])
+
+  const shareItem = useCallback(async (item: QueueItem) => {
+    const payload: SharePayload = {
+      title: item.name,
+      language,
+      segments: item.segments,
+      createdAt: Date.now(),
+    }
+    const url = await shareUrl(payload)
+    if (!url || url.length > 8000) {
+      setShareLink(t('share.tooLarge'))
+      return
+    }
+    setShareLink(url)
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareLink(t('share.copied'))
+    } catch {
+      // The link stays visible for manual copying.
+    }
+  }, [language, t])
+
+  const exportClip = useCallback((item: QueueItem) => {
+    const pcm = pcmStoreRef.current.get(item.id)
+    if (!pcm || !clipRange || clipRange.endMs <= clipRange.startMs) return
+    const start = Math.floor((clipRange.startMs / 1000) * 16000)
+    const end = Math.min(pcm.length, Math.floor((clipRange.endMs / 1000) * 16000))
+    const slice = pcm.slice(start, end)
+    const wav = encodeWav(slice, 16000)
+    const bytes = new Uint8Array(wav.byteLength)
+    bytes.set(wav)
+    const blob = new Blob([bytes], { type: 'audio/wav' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${item.name.replace(/\.[^.]+$/, '')}-clip.wav`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }, [clipRange])
+
+  const startPlaybackForClip = useCallback((startMs: number, endMs: number, pcm: Float32Array) => {
+    try {
+      const ctx = new AudioContext()
+      const buffer = ctx.createBuffer(1, pcm.length, 16000)
+      const samples = new Float32Array(pcm.length)
+      samples.set(pcm)
+      buffer.copyToChannel(samples, 0)
+      const source = ctx.createBufferSource()
+      source.buffer = buffer
+      source.connect(ctx.destination)
+      source.onended = () => { void ctx.close() }
+      source.start(0, startMs / 1000, (endMs - startMs) / 1000)
+    } catch {
+      // Audio output can be blocked until a gesture; controls stay usable.
+    }
+  }, [])
+
   const downloadZip = useCallback(async () => {
     const zip = new JSZip()
     for (const item of doneItems) {
       const base = item.name.replace(/\.[^.]+$/, '')
       zip.file(outputFileName(item.name, outputFormat), formatTranscript(item.segments, outputFormat))
+      zip.file(`${base}.md`, toMarkdown(item.segments, item.name, buildChapters(item.segments, chapterGap * 1000)))
+      zip.file(`${base}.chapters.txt`, buildChapters(item.segments, chapterGap * 1000).map((chapter) => `${chapter.title}`).join('\n'))
+      zip.file(`${base}.settings.json`, JSON.stringify({
+        version: 2,
+        name: item.name,
+        language,
+        model,
+        task,
+        outputFormat,
+        displayMode,
+        durationSec: item.durationSec,
+        createdAt: item.createdAt,
+        exportedAt: Date.now(),
+      }, null, 2))
       // Also bundle a standalone viewer with the embedded audio when available.
       const pcm = pcmStoreRef.current.get(item.id)
       if (pcm) {
@@ -544,7 +830,7 @@ export function TranscribePage() {
     anchor.download = `koe-transcripts.zip`
     anchor.click()
     URL.revokeObjectURL(url)
-  }, [doneItems, outputFormat, locale])
+  }, [doneItems, outputFormat, locale, language, model, task, displayMode, chapterGap])
 
   // Terminate the worker on unmount.
   useEffect(
@@ -567,7 +853,7 @@ export function TranscribePage() {
     const info = getModel(model)
     const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory
     const lowMemory = typeof deviceMemory === 'number' && deviceMemory > 0 && deviceMemory < 4
-    if (!info.bundled || modelReady[model] || download.active || lowMemory) return
+    if (!info.bundled || modelReady[model] || download.active || lowMemory || isSaveData()) return
     if (autoWarmRef.current.has(model)) return
     autoWarmRef.current.add(model)
     initModel(model)
@@ -586,6 +872,25 @@ export function TranscribePage() {
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 pb-20">
+      {shared && (
+        <section className="mt-6 rounded-xl border border-coral/40 bg-coral/5 p-5" aria-labelledby="shared-title">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 id="shared-title" className="text-lg font-black text-ai dark:text-warm">{shared.title || t('share.sharedTitle')}</h2>
+              <p className="mt-1 text-xs font-semibold text-neutral-500">{t('share.readOnly')}</p>
+            </div>
+            <button type="button" onClick={() => { setShared(null); window.history.replaceState(null, '', window.location.pathname + window.location.search) }} className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm">
+              {t('projects.close')}
+            </button>
+          </div>
+          <div className="mt-4 space-y-1">
+            {shared.segments.map((segment, index) => (
+              <p key={index} className="rounded-lg bg-white/70 px-3 py-2 text-sm text-neutral-800 dark:bg-ai/20 dark:text-warm/90">{segment.text}</p>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Hero */}
       <section className="py-8 text-center sm:py-12">
         <p className="inline-flex items-center gap-2 rounded-full border border-coral/40 bg-coral/10 px-4 py-1.5 text-xs font-bold text-coral">
@@ -604,6 +909,17 @@ export function TranscribePage() {
         {!crossOriginIsolated && (
           <p className="mx-auto mt-3 max-w-xl text-xs text-amber-600 dark:text-amber-400">
             Single-thread mode: cross-origin isolation headers are missing, transcription will be slower.
+          </p>
+        )}
+        {device && (
+          <p className="mx-auto mt-2 max-w-xl text-[11px] font-bold text-neutral-500 dark:text-neutral-400" data-testid="device-profile">
+            {t('device.backend')}: {t('device.wasm')}{device.webgpuAvailable ? ` (${t('device.webgpu')})` : ''} · {t('device.threads')}: {device.threads} · {t('device.recommendation')}: {device.recommendation.toUpperCase()}
+            {isSaveData() && ` · ${t('device.saveData')}`}
+          </p>
+        )}
+        {saveState !== 'idle' && (
+          <p className="mt-2 text-[11px] font-bold text-emerald-600 dark:text-emerald-400" role="status" aria-live="polite">
+            {saveState === 'saved' ? t('workspace.saved') : t('workspace.saving')}
           </p>
         )}
       </section>
@@ -787,6 +1103,17 @@ export function TranscribePage() {
             </select>
           </label>
 
+          <label className="flex items-center gap-2 self-end rounded-xl border border-ai/15 px-3 py-2.5 dark:border-warm/15">
+            <input
+              type="checkbox"
+              checked={keepAudio}
+              onChange={(event) => setKeepAudio(event.target.checked)}
+              className="h-4 w-4 accent-coral"
+              data-testid="keep-audio"
+            />
+            <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('projects.saveAudio')}</span>
+          </label>
+
           {/* Model download / bundled notice */}
           <div className="sm:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-ai/10 bg-ai/5 p-4 dark:border-warm/10 dark:bg-warm/5">
@@ -860,13 +1187,47 @@ export function TranscribePage() {
             {doneItems.map((item) => (
               <article key={item.id} className="overflow-hidden rounded-2xl border border-ai/15 dark:border-warm/10">
                 <header className="flex flex-wrap items-center justify-between gap-2 border-b border-ai/10 bg-ai/5 px-4 py-2.5 dark:border-warm/10 dark:bg-warm/5">
-                  <p className="max-w-md truncate text-sm font-bold text-ai dark:text-warm">{item.name}</p>
-                  <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(event) => setItems((current) => current.map((entry) => (entry.id === item.id ? { ...entry, name: event.target.value } : entry)))}
+                    aria-label={t('workspace.rename')}
+                    className="max-w-md min-w-40 flex-1 rounded-lg border border-transparent bg-transparent px-2 py-1 text-sm font-bold text-ai outline-none hover:border-ai/20 focus:border-coral/50 dark:text-warm"
+                  />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => undoSegments(item.id)}
+                      disabled={!canUndo(history[item.id] ?? initHistory([]))}
+                      aria-label={t('workspace.undo')}
+                      title={t('workspace.undo')}
+                      className="rounded-lg border border-ai/25 px-2.5 py-1.5 text-xs font-extrabold text-ai disabled:opacity-30 dark:border-warm/20 dark:text-warm"
+                    >
+                      Undo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => redoSegments(item.id)}
+                      disabled={!canRedo(history[item.id] ?? initHistory([]))}
+                      aria-label={t('workspace.redo')}
+                      title={t('workspace.redo')}
+                      className="rounded-lg border border-ai/25 px-2.5 py-1.5 text-xs font-extrabold text-ai disabled:opacity-30 dark:border-warm/20 dark:text-warm"
+                    >
+                      Redo
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFocusId((current) => (current === item.id ? null : item.id))}
+                      aria-pressed={focusId === item.id}
+                      className="rounded-lg border border-ai/25 px-2.5 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 dark:border-warm/20 dark:text-warm"
+                    >
+                      {focusId === item.id ? t('editor.exitFocus') : t('editor.focusMode')}
+                    </button>
                     <button
                       type="button"
                       onClick={() => startItem(item)}
                       disabled={anyProcessing}
-                      className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20 dark:text-warm"
+                      className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-warm/20 dark:text-warm"
                     >
                       {t('step3.rerun')}
                     </button>
@@ -874,13 +1235,14 @@ export function TranscribePage() {
                       type="button"
                       onClick={() => exportStandalone(item)}
                       disabled={!pcmIds.has(item.id)}
-                      className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-coral/50 dark:border-warm/20 dark:text-warm"
+                      className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 disabled:cursor-not-allowed disabled:opacity-50 dark:border-warm/20 dark:text-warm"
                     >
                       {t('step3.exportView')}
                     </button>
                     <button
                       type="button"
                       onClick={() => void copyTranscript(item)}
+                      data-testid="copy-transcript"
                       className="rounded-lg px-3 py-1.5 text-xs font-bold text-ai hover:bg-ai/10 focus-visible:ring-2 focus-visible:ring-coral/50 dark:text-warm"
                     >
                       {copiedId === item.id ? t('step3.copied') : t('step3.copy')}
@@ -888,42 +1250,221 @@ export function TranscribePage() {
                     <button
                       type="button"
                       onClick={() => downloadTranscript(item)}
+                      data-testid="download-transcript"
                       className="rounded-lg bg-ai px-3 py-1.5 text-xs font-extrabold text-warm hover:bg-ai-light focus-visible:ring-2 focus-visible:ring-coral/50"
                     >
                       {t('step3.download')} {outputFormat.toUpperCase()}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => void shareItem(item)}
+                      className="rounded-lg border border-coral/40 px-3 py-1.5 text-xs font-extrabold text-coral hover:bg-coral/10 focus-visible:ring-2 focus-visible:ring-coral/50"
+                    >
+                      {t('share.button')}
+                    </button>
                   </div>
                 </header>
+                {shareLink && (
+                  <p className="border-b border-ai/10 px-4 py-2 text-xs font-semibold text-coral dark:border-warm/10" role="status">
+                    {shareLink.startsWith('http') ? <a href={shareLink} className="underline" target="_blank" rel="noreferrer">{shareLink}</a> : shareLink}
+                  </p>
+                )}
+                {focusId === item.id && (
+                  <div className="space-y-4 border-b border-ai/10 bg-ai/5 p-4 dark:border-warm/10 dark:bg-warm/5" data-testid="editor-tools">
+                    <div className="flex flex-wrap items-end gap-3">
+                      <label className="min-w-48 flex-1">
+                        <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('editor.find')}</span>
+                        <input
+                          type="text"
+                          value={find}
+                          onChange={(event) => setFind(event.target.value)}
+                          data-testid="find-input"
+                          className="mt-1 w-full rounded-lg border border-ai/20 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-coral/50 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                        />
+                      </label>
+                      <label className="min-w-48 flex-1">
+                        <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('editor.replace')}</span>
+                        <input
+                          type="text"
+                          value={replaceText}
+                          onChange={(event) => setReplaceText(event.target.value)}
+                          className="mt-1 w-full rounded-lg border border-ai/20 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-coral/50 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                        />
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300">
+                        <input type="checkbox" checked={useRegex} onChange={(event) => setUseRegex(event.target.checked)} className="h-4 w-4 accent-coral" /> {t('editor.regex')}
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-neutral-600 dark:text-neutral-300">
+                        <input type="checkbox" checked={caseSensitive} onChange={(event) => setCaseSensitive(event.target.checked)} className="h-4 w-4 accent-coral" /> {t('editor.caseSensitive')}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const result = findReplaceSegments(item.segments, find, replaceText, { regex: useRegex, caseSensitive })
+                          if (result.count > 0) updateSegments(item.id, result.segments)
+                        }}
+                        className="rounded-lg bg-coral px-3 py-2 text-xs font-extrabold text-[#1A1207] hover:brightness-110 focus-visible:ring-2 focus-visible:ring-ai/50"
+                      >
+                        {t('editor.replaceAll')} · {t('editor.matches', { count: find ? findReplaceSegments(item.segments, find, '', { regex: useRegex, caseSensitive }).count : 0 })}
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => updateSegments(item.id, item.segments.map((segment) => ({ ...segment, text: cleanupTranscript(segment.text) })))}
+                        className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai hover:bg-ai/5 dark:border-warm/20 dark:text-warm"
+                      >
+                        {t('editor.cleanup')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const chapters = buildChapters(item.segments, chapterGap * 1000)
+                          updateSegments(item.id, item.segments.map((segment) => {
+                            const chapterIndex = Math.max(0, chapters.findIndex((chapter) => chapter.startMs <= segment.startMs))
+                            return { ...segment, speaker: (chapterIndex % 2) + 1 }
+                          }))
+                        }}
+                        className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai hover:bg-ai/5 dark:border-warm/20 dark:text-warm"
+                      >
+                        {t('editor.speakerAdd')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const index = item.segments.findIndex((segment) => segment.endMs - segment.startMs > 6000)
+                          if (index < 0) return
+                          const segment = item.segments[index]
+                          const middle = Math.round((segment.startMs + segment.endMs) / 2)
+                          const next = [...item.segments]
+                          next.splice(index, 1,
+                            { ...segment, endMs: middle },
+                            { ...segment, startMs: middle, text: segment.text },
+                          )
+                          updateSegments(item.id, next)
+                        }}
+                        className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai hover:bg-ai/5 dark:border-warm/20 dark:text-warm"
+                      >
+                        {t('editor.split')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const index = item.segments.findIndex((segment, i) => i > 0 && segment.startMs - item.segments[i - 1].endMs < 4000)
+                          if (index < 0) return
+                          const previous = item.segments[index - 1]
+                          const current = item.segments[index]
+                          const next = [...item.segments]
+                          next.splice(index - 1, 2, { ...previous, endMs: current.endMs, text: `${previous.text} ${current.text}`.trim() })
+                          updateSegments(item.id, next)
+                        }}
+                        className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai hover:bg-ai/5 dark:border-warm/20 dark:text-warm"
+                      >
+                        {t('editor.merge')}
+                      </button>
+                      <label className="flex items-center gap-2 text-xs font-bold text-neutral-600 dark:text-neutral-300">
+                        {t('editor.chapters')}
+                        <input
+                          type="number"
+                          min={1}
+                          max={30}
+                          value={chapterGap}
+                          onChange={(event) => setChapterGap(Math.max(1, Math.min(30, Number(event.target.value) || 4)))}
+                          className="w-16 rounded-lg border border-ai/20 bg-white px-2 py-1 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                        />
+                        {t('editor.chapterGap', { seconds: chapterGap })}
+                      </label>
+                    </div>
+                    {detectRepeats(item.segments.map((segment) => segment.text).join(' ')) && (
+                      <div className="rounded-lg border border-amber-400/50 bg-amber-500/10 p-3 text-xs font-bold text-amber-700 dark:text-amber-300">
+                        <p>{t('editor.repeats')}</p>
+                        <p className="mt-0.5 font-semibold">{t('editor.repeatsHint')}</p>
+                        <button type="button" onClick={() => updateSegments(item.id, item.segments.map((segment) => ({ ...segment, text: cleanupTranscript(segment.text) })))} className="mt-2 rounded-lg border border-amber-500/50 px-3 py-1.5 font-extrabold hover:bg-amber-500/10">
+                          {t('editor.removeRepeats')}
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex flex-wrap items-center gap-2 border-t border-ai/10 pt-3 dark:border-warm/10">
+                      <button type="button" onClick={() => setClipRange({ startMs: playheadRef.current, endMs: clipRange?.endMs ?? 0 })} className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm">
+                        {t('editor.clipStart')}
+                      </button>
+                      <button type="button" onClick={() => setClipRange({ startMs: clipRange?.startMs ?? 0, endMs: playheadRef.current })} className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm">
+                        {t('editor.clipEnd')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const pcm = pcmStoreRef.current.get(item.id)
+                          if (!pcm || !clipRange || clipRange.endMs <= clipRange.startMs) return
+                          startPlaybackForClip(clipRange.startMs, clipRange.endMs, pcm)
+                        }}
+                        className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm"
+                      >
+                        {t('editor.clipPlay')}
+                      </button>
+                      <button type="button" onClick={() => exportClip(item)} disabled={!clipRange || clipRange.endMs <= clipRange.startMs} className="rounded-lg border border-ai/25 px-3 py-2 text-xs font-extrabold text-ai disabled:opacity-40 dark:border-warm/20 dark:text-warm">
+                        {t('editor.clipExport')}
+                      </button>
+                      {(!clipRange || clipRange.endMs <= clipRange.startMs) && <span className="text-xs text-neutral-500">{t('editor.clipNone')}</span>}
+                    </div>
+                    <label className="block">
+                      <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('projects.notes')}</span>
+                      <textarea
+                        value={item.notes}
+                        onChange={(event) => setItems((current) => current.map((entry) => (entry.id === item.id ? { ...entry, notes: event.target.value } : entry)))}
+                        rows={2}
+                        placeholder={t('projects.notesPlaceholder')}
+                        className="mt-1 w-full rounded-lg border border-ai/20 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-coral/50 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('exports.presets')}</span>
+                      <select
+                        value={preset}
+                        onChange={(event) => setPreset(event.target.value as typeof preset)}
+                        className="mt-1 w-full rounded-lg border border-ai/20 bg-white px-3 py-2 text-sm font-semibold dark:border-warm/15 dark:bg-ai dark:text-warm"
+                      >
+                        <option value="plain">{t('exports.presetPlain')}</option>
+                        <option value="markdown">{t('exports.presetMarkdown')}</option>
+                        <option value="captions">{t('exports.presetCaptions')}</option>
+                        <option value="clean">{t('exports.presetClean')}</option>
+                      </select>
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const blob = new Blob([presetText(item)], { type: 'text/plain;charset=utf-8' })
+                          const url = URL.createObjectURL(blob)
+                          const anchor = document.createElement('a')
+                          anchor.href = url
+                          anchor.download = `${item.name.replace(/\.[^.]+$/, '')}.${preset === 'markdown' ? 'md' : 'txt'}`
+                          anchor.click()
+                          URL.revokeObjectURL(url)
+                        }}
+                        className="rounded-lg bg-ai px-3 py-2 text-xs font-extrabold text-warm hover:bg-ai-light focus-visible:ring-2 focus-visible:ring-coral/50"
+                      >
+                        {t('step3.download')} {preset.toUpperCase()}
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <TranscriptView
                   canPlay={pcmIds.has(item.id)}
                   getPcm={() => pcmStoreRef.current.get(item.id) ?? null}
                   segments={item.segments}
                   words={item.words}
                   displayMode={displayMode}
+                  onPlayhead={(ms) => { playheadRef.current = ms }}
                   onShiftSegments={(offsetMs) =>
-                    setItems((current) =>
-                      current.map((entry) =>
-                        entry.id === item.id
-                          ? {
-                              ...entry,
-                              segments: entry.segments.map((segment) => ({
-                                ...segment,
-                                startMs: segment.startMs + offsetMs,
-                                endMs: segment.endMs + offsetMs,
-                              })),
-                            }
-                          : entry,
-                      ),
-                    )
+                    updateSegments(item.id, item.segments.map((segment) => ({
+                      ...segment,
+                      startMs: segment.startMs + offsetMs,
+                      endMs: segment.endMs + offsetMs,
+                    })))
                   }
                   onEditSegment={(index, text) =>
-                    setItems((current) =>
-                      current.map((entry) =>
-                        entry.id === item.id
-                          ? { ...entry, segments: entry.segments.map((segment, segIndex) => (segIndex === index ? { ...segment, text } : segment)) }
-                          : entry,
-                      ),
-                    )
+                    updateSegments(item.id, item.segments.map((segment, segIndex) => (segIndex === index ? { ...segment, text } : segment)))
                   }
                 />
               </article>

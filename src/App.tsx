@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { I18nProvider } from './i18n/I18nProvider'
 import { useI18n } from './i18n/useI18n'
 import type { Locale } from './i18n/context'
@@ -6,10 +6,20 @@ import { Logo } from './components/Logo'
 import { TranscribePage } from './pages/TranscribePage'
 import { AboutPage } from './pages/AboutPage'
 import { HelpPage } from './pages/HelpPage'
+import { HomePage } from './components/HomePage'
+import { ProjectsPage } from './components/ProjectsPage'
+import { CommandPalette, useCommandPaletteHotkey, type PaletteAction } from './components/CommandPalette'
+import { OnboardingTip, hasSeenTip } from './components/Onboarding'
+import { deleteAudio, deleteProject, estimateStorage, listProjects, saveProject, type Project } from './lib/projects'
 
-type Page = 'transcribe' | 'about' | 'help'
+type Page = 'home' | 'transcribe' | 'projects' | 'about' | 'help'
 type Theme = 'light' | 'dark' | 'system'
 const THEME_STORAGE_KEY = 'koe-theme-v2'
+
+export interface RestoreRequest {
+  project: Project
+  token: number
+}
 
 function getInitialTheme(): Theme {
   try {
@@ -28,7 +38,7 @@ function resolveTheme(theme: Theme): 'light' | 'dark' {
   return theme
 }
 
-function ThemeIcon({ theme }: { theme: Theme }) {
+function ThemeIcon({ theme }: ThemeIconProps) {
   if (theme === 'light') return <SunIcon />
   if (theme === 'dark') return <MoonIcon />
   return (
@@ -37,6 +47,10 @@ function ThemeIcon({ theme }: { theme: Theme }) {
       <path d="M8.5 21h7M12 17v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   )
+}
+
+interface ThemeIconProps {
+  theme: Theme
 }
 
 function InstallIcon() {
@@ -50,12 +64,11 @@ function InstallIcon() {
 function SunIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="4.5" stroke="currentColor" strokeWidth="1.8" />
-      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M19.8 4.2 18 6M6 18l-1.8 1.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="4.5" r="4.5" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.2 4.2l1.8 1.8M18 18l1.8 1.8M19.8 4.2 18 6M6 18l1.8 1.8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   )
 }
-
 function MoonIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -74,9 +87,26 @@ function GitHubIcon() {
 
 function Shell() {
   const { t, locale, setLocale } = useI18n()
-  const [page, setPage] = useState<Page>('transcribe')
+  const [page, setPage] = useState<Page>('home')
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [installPrompt, setInstallPrompt] = useState<(Event & { prompt: () => Promise<void> }) | null>(null)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [storage, setStorage] = useState({ usage: 0, quota: 0 })
+  const [restore, setRestore] = useState<RestoreRequest | null>(null)
+  const [paletteOpen, setPaletteOpen] = useState(false)
+  const [showTip, setShowTip] = useState(() => !hasSeenTip())
+
+  const refresh = useCallback(async () => {
+    const [list, estimate] = await Promise.all([listProjects(), estimateStorage()])
+    setProjects(list)
+    setStorage(estimate)
+  }, [])
+
+  useEffect(() => {
+    // Hydrate persisted projects on mount.
+    // oxlint-disable-next-line react/set-state-in-effect
+    void refresh()
+  }, [refresh])
 
   // Track the system theme while the user selected "system".
   useEffect(() => {
@@ -105,22 +135,70 @@ function Shell() {
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
+  const startNew = useCallback(() => {
+    setRestore(null)
+    setPage('transcribe')
+  }, [])
+
+  const openProject = useCallback((project: Project) => {
+    setRestore({ project, token: Date.now() })
+    setPage('transcribe')
+  }, [])
+
+  const toggleTheme = useCallback(() => {
+    setTheme((current) => (current === 'light' ? 'dark' : current === 'dark' ? 'system' : 'light'))
+  }, [])
+
+  const toggleLanguage = useCallback(() => setLocale((locale === 'en' ? 'id' : 'en') as Locale), [locale, setLocale])
+
+  const paletteActions: PaletteAction[] = [
+    { id: 'new', label: t('common.cmdNew'), hint: 'Ctrl K', run: startNew },
+    { id: 'home', label: t('app.navHome'), run: () => setPage('home') },
+    { id: 'projects', label: t('app.navProjects'), run: () => setPage('projects') },
+    { id: 'transcribe', label: t('app.nav.transcribe'), run: () => setPage('transcribe') },
+    { id: 'about', label: t('app.nav.about'), run: () => setPage('about') },
+    { id: 'help', label: t('app.nav.help'), run: () => setPage('help') },
+    { id: 'theme', label: t('common.cmdTheme'), run: toggleTheme },
+    { id: 'language', label: t('common.cmdLanguage'), run: toggleLanguage },
+    { id: 'search', label: t('common.cmdSearch'), hint: '/', run: () => window.dispatchEvent(new Event('koe:focus-search')) },
+    { id: 'copy', label: t('common.cmdCopy'), run: () => window.dispatchEvent(new Event('koe:copy-transcript')) },
+    { id: 'download', label: t('common.cmdDownload'), run: () => window.dispatchEvent(new Event('koe:download-transcript')) },
+  ]
+  useCommandPaletteHotkey(() => setPaletteOpen(true))
+
   const navItems: Array<{ id: Page; label: string }> = [
+    { id: 'home', label: t('app.navHome') },
     { id: 'transcribe', label: t('app.nav.transcribe') },
+    { id: 'projects', label: t('app.navProjects') },
     { id: 'about', label: t('app.nav.about') },
     { id: 'help', label: t('app.nav.help') },
   ]
 
-  const toggleLanguage = () => setLocale((locale === 'en' ? 'id' : 'en') as Locale)
-  const cycleTheme = () => setTheme((current) => (current === 'light' ? 'dark' : current === 'dark' ? 'system' : 'light'))
+  const handleSaved = useCallback(() => {
+    void refresh()
+  }, [refresh])
+
+  const updateProject = useCallback(async (patch: Partial<Project> & { id: string }) => {
+    const current = projects.find((project) => project.id === patch.id)
+    if (!current) return
+    await saveProject({ ...current, ...patch, updatedAt: Date.now() })
+    await refresh()
+  }, [projects, refresh])
+
+  const removeProject = useCallback(async (id: string) => {
+    await deleteProject(id)
+    await deleteAudio(id)
+    await refresh()
+  }, [refresh])
 
   return (
     <div className="flex min-h-screen flex-col bg-warm text-neutral-800 dark:bg-ink dark:text-warm">
+      <a href="#main-content" className="skip-link">{t('common.skipToContent')}</a>
       <header className="sticky top-0 z-20 border-b border-ai/10 bg-warm/80 backdrop-blur dark:border-warm/10 dark:bg-ink/80">
         <div className="mx-auto flex h-16 max-w-5xl items-center justify-between gap-3 px-4">
           <button
             type="button"
-            onClick={() => setPage('transcribe')}
+            onClick={() => setPage('home')}
             className="flex items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-coral/50"
             aria-label="Koe"
           >
@@ -136,7 +214,7 @@ function Shell() {
                 onClick={() => setPage(item.id)}
                 aria-current={page === item.id ? 'page' : undefined}
                 className={[
-                  'rounded-xl px-4 py-2 text-sm font-extrabold outline-none transition focus-visible:ring-2 focus-visible:ring-coral/50',
+                  'rounded-xl px-3 py-2 text-sm font-extrabold outline-none transition focus-visible:ring-2 focus-visible:ring-coral/50',
                   page === item.id
                     ? 'bg-ai text-warm dark:bg-warm dark:text-ai'
                     : 'text-ai hover:bg-ai/5 dark:text-warm dark:hover:bg-warm/10',
@@ -148,6 +226,15 @@ function Shell() {
           </nav>
 
           <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              aria-label={t('common.commandPalette')}
+              title="Ctrl K"
+              className="hidden rounded-xl border border-ai/20 px-3 py-2 text-xs font-extrabold text-ai hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 md:block dark:border-warm/20 dark:text-warm"
+            >
+              Ctrl K
+            </button>
             {installPrompt && (
               <button
                 type="button"
@@ -164,7 +251,7 @@ function Shell() {
             )}
             <button
               type="button"
-              onClick={toggleLanguage}
+              onClick={() => setLocale((locale === 'en' ? 'id' : 'en') as Locale)}
               className="rounded-xl px-3 py-2 text-xs font-black uppercase text-ai outline-none hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:text-warm dark:hover:bg-warm/10"
               aria-label={t('common.language')}
             >
@@ -172,15 +259,12 @@ function Shell() {
             </button>
             <button
               type="button"
-              onClick={cycleTheme}
+              onClick={toggleTheme}
               className="flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-ai outline-none hover:bg-ai/5 focus-visible:ring-2 focus-visible:ring-coral/50 dark:text-warm dark:hover:bg-warm/10"
               aria-label={theme === 'light' ? t('common.themeDark') : theme === 'dark' ? t('common.themeSystem') : t('common.themeLight')}
               title={theme === 'light' ? t('common.themeDark') : theme === 'dark' ? t('common.themeSystem') : t('common.themeLight')}
             >
               <ThemeIcon theme={theme} />
-              <span className="hidden text-[10px] font-black uppercase text-neutral-500 dark:text-neutral-400 md:inline">
-                {theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'Auto'}
-              </span>
             </button>
             <a
               href="https://github.com/nekonaru/koe"
@@ -193,8 +277,8 @@ function Shell() {
             </a>
           </div>
         </div>
-        {/* Mobile nav */}
-        <nav className="flex items-center gap-1 border-t border-ai/10 px-4 py-1.5 sm:hidden dark:border-warm/10" aria-label="Main navigation">
+        {/* Mobile navigation */}
+        <nav className="flex items-center gap-1 border-t border-ai/10 px-2 py-1.5 sm:hidden dark:border-warm/10" aria-label="Main navigation">
           {navItems.map((item) => (
             <button
               key={item.id}
@@ -202,7 +286,7 @@ function Shell() {
               onClick={() => setPage(item.id)}
               aria-current={page === item.id ? 'page' : undefined}
               className={[
-                'rounded-lg px-3 py-1.5 text-xs font-extrabold outline-none focus-visible:ring-2 focus-visible:ring-coral/50',
+                'min-w-11 flex-1 rounded-lg px-2 py-2 text-[11px] font-extrabold outline-none focus-visible:ring-2 focus-visible:ring-coral/50',
                 page === item.id ? 'bg-ai text-warm dark:bg-warm dark:text-ai' : 'text-ai dark:text-warm',
               ].join(' ')}
             >
@@ -212,13 +296,42 @@ function Shell() {
         </nav>
       </header>
 
-      <div className="flex-1">
-        {page === 'transcribe' && <TranscribePage />}
+      <div id="main-content" className="flex-1" tabIndex={-1}>
+        {page === 'home' && (
+          <HomePage projects={projects} storage={storage} onOpen={openProject} onNew={startNew} />
+        )}
+        {page === 'transcribe' && (
+          <TranscribePage restore={restore} onSaved={handleSaved} />
+        )}
+        {page === 'projects' && (
+          <ProjectsPage
+            projects={projects}
+            storage={storage}
+            onOpen={openProject}
+            onRename={(id, name) => void updateProject({ id, name })}
+            onNotes={(id, notes) => void updateProject({ id, notes })}
+            onFavorite={(id) => {
+              const project = projects.find((entry) => entry.id === id)
+              if (project) void updateProject({ id, favorite: !project.favorite })
+            }}
+            onDelete={(id) => void removeProject(id)}
+            onToggleAudio={(id, keepAudio) => {
+              void (async () => {
+                await updateProject({ id, keepAudio })
+                if (!keepAudio) await deleteAudio(id)
+                else {
+                  const source = projects.find((entry) => entry.id === id)
+                  if (source && source.durationSec === null) await saveProject({ ...source, keepAudio: true })
+                }
+              })()
+            }}
+          />
+        )}
         {page === 'about' && <AboutPage />}
         {page === 'help' && <HelpPage />}
       </div>
 
-      <footer className="border-t border-ai/10 py-4 dark:border-warm/10">
+      <footer className="border-t border-ai/10 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] dark:border-warm/10">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-2 px-4 text-center text-xs font-semibold text-neutral-500 dark:text-neutral-400">
           <span>{t('footer.nothingUploads')}</span>
           <span aria-hidden="true">·</span>
@@ -227,6 +340,9 @@ function Shell() {
           <span>{t('footer.openSource')}</span>
         </div>
       </footer>
+
+      <CommandPalette key={paletteOpen ? 'palette-open' : 'palette-closed'} open={paletteOpen} actions={paletteActions} onClose={() => setPaletteOpen(false)} />
+      {showTip && <OnboardingTip onDismiss={() => setShowTip(false)} />}
     </div>
   )
 }

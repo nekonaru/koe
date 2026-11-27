@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
   <img src="public/icon.svg" alt="Logo Koe" width="120" />
   <h1>Koe: Transkripsi Privat di Browser Kamu</h1>
   <p><b>Ubah audio dan video menjadi teks di browser kamu, gratis dan tanpa batas,<br/>
@@ -62,6 +62,7 @@
 | **Pemangkasan hening** | Jendela yang hampir hening dilewati, menghapus isian yang mengada-ada |
 | **Mode karaoke** | Timestamp tingkat kata menyorot setiap kata saat diucapkan |
 | **Pintasan keyboard** | Space mengaktifkan atau menghentikan pemutaran; / memfokuskan pencarian |
+| **Pustaka proyek** | Transkrip selesai tersimpan di perangkat ini; buka lagi berserta audio dan pengaturannya |
 | **Antrean batch** | Antrek beberapa file dan unduh semua hasil sebagai ZIP |
 | **Pembatalan aman** | Batalkan di antara jendela 30 detik; worker dihentikan dan dibuat ulang |
 
@@ -72,9 +73,11 @@
 | **Teks polos** | TXT untuk dibaca dan ditempel di mana saja |
 | **Subtitle** | SRT dan VTT dengan timestamp per segmen yang akurat |
 | **Data terstruktur** | JSON dengan timestamp mulai dan selesai per segmen dalam milidetik |
+| **Markdown dan preset** | Markdown dengan bab, baris caption pendek, dan paragraf bersih |
 | **Data spreadsheet** | CSV dengan timestamp per segmen, terbuka di Excel dengan BOM |
 | **Salin dan unduh** | Satu klik ke clipboard, atau simpan format pilihan per file |
 | **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip, termasuk halaman viewer mandiri masing-masing |
+| **Tautan berbagi hanya-baca** | Transkrip terkompresi di dalam URL, tanpa upload atau akun |
 | **Waveform dengan seek** | Waveform kanvas dengan isi progress; klik di mana pun untuk melompat |
 | **Sinkron pemutaran** | Dengarkan audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat |
 | **Ekspor halaman viewer mandiri** | Halaman HTML self-contained dengan transkrip dan audio tertanam; buka offline di mana saja |
@@ -104,6 +107,9 @@
 | **Inggris dan Indonesia** | Seluruh UI dalam dua bahasa, tersimpan antar sesi |
 | **Tema terang, gelap, dan sistem** | Tombol tiga posisi di header; ikut pilihan kamu atau sistem |
 | **PWA yang bisa dipasang** | Tambahkan koe ke layar utama atau peluncur aplikasi |
+| **Palette perintah** | Tekan Ctrl K untuk melompat ke aksi apa pun |
+| **Urungkan dan ulangi** | Batalkan edit transkrip, geser timestamp, dan pembersihan teks |
+| **Navigasi mobile** | Navigasi ringkas dan kontrol yang nyaman disentuh |
 
 ### Privasi
 

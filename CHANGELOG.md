@@ -1,7 +1,32 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project are documented in this file.
 
+## v1.9.0
+
+Koe becomes a workspace: finished transcripts are saved on the device, editing has history, and a command palette reaches every action.
+
+### New features
+
+- **Project library.** Finished transcripts are stored in IndexedDB and can be reopened from Home or Projects with their settings and, when kept, their audio.
+- **Autosave and project notes.** Name, notes and favorite state are saved automatically; finished work survives a reload.
+- **Undo and redo.** Transcript edits, timestamp shifts, cleanup and find and replace are reversible.
+- **Editor tools.** Find and replace with regex and case options, text cleanup, repeat detection, chapter building, speaker assignment, split and merge, and WAV clip export from an A-B range.
+- **Export presets.** Markdown with chapters, short caption lines and clean paragraphs join the existing list of formats.
+- **Share link.** A compressed read-only transcript travels in a URL hash; nothing is uploaded.
+- **Command palette.** Ctrl K opens a searchable list of navigation and result actions.
+- **Home and Projects pages.** Recent work, search, favorites, a storage meter and per project audio retention.
+
+### Improvements
+
+- **Design tokens and motion.** A single set of spacing, radius and timing variables drives the new surfaces; motion is opt-in under reduced motion settings.
+- **Native dialogs.** The palette and first-run tip use the platform dialog element for focus handling and Esc dismissal.
+- **Device profile.** The UI reports threads, memory and a suggested model, plus a data saver path that avoids automatic model warming.
+- **Fuller ZIP bundle.** Exports now include Markdown, chapter text, settings metadata and the standalone viewer.
+
+### Bug fixes
+
+- **Share payloads are validated.** Malformed or oversized links are rejected before they are shown.
 ## v1.8.0
 
 A focused release: karaoke word highlighting, spreadsheet export, and word-level timestamps that actually work on the bundled models.

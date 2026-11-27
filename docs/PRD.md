@@ -301,3 +301,17 @@ Dieksekusi pada 2026-11-19.
 - **Pintasan keyboard.** Space memutar/menjeda pemutaran yang tersedia, / memfokuskan pencarian.
 - **Pemangkasan jendela hening.** Jendela dengan puncak |x| < 0,01 dilewati agar Whisper tidak mengarang di audio hening atau bising.
 - **ZIP menyertakan viewer.** Arsip ekspor berisi `nama.view.html` per file selain transkripnya.
+
+
+## Bagian 21: Catatan Implementasi v1.9.0
+
+Dieksekusi pada 2026-11-28.
+
+- **Pustaka proyek.** IndexedDB `koe-projects` versi 1 menyimpan objek `projects` dan `audio`. Semua fungsi di `src/lib/projects.ts` gagal dengan aman bila storage tidak tersedia. Audio hanya disimpan bila pengguna mengaktifkan opsi Simpan audio.
+- **Halaman Beranda dan Proyek.** Navigasi utama bertambah dua halaman. Beranda menampilkan proyek terbaru dan pengukur kuota. Proyek mendukung pencarian, favorit, ganti nama, catatan, dan penghapusan.
+- **Simpan otomatis.** Transkrip selesai ditulis ke IndexedDB setelah jeda 700 ms. `onSaved` disimpan dalam ref agar perubahan identitas callback tidak memicu loop penyimpanan.
+- **Riwayat edit.** `src/lib/history.ts` menyediakan stack undo/redo dengan batas 50 langkah. Setiap edit segmen, geser timestamp, dan operasi teks melewati stack ini.
+- **Alat edit.** `src/lib/textTools.ts` berisi pembersihan teks, deteksi pengulangan, cari ganti dengan opsi regex, pembuatan bab dari jeda, Markdown, baris caption, dan paragraf bersih. Worker tetap memakai jendela 30 detik tanpa overlap supaya progres dan pembatalan tetap sederhana.
+- **Tautan berbagi.** `src/lib/share.ts` memakai CompressionStream deflate dan base64url dengan fallback JSON biasa. Payload divalidasi dan ditolak bila tidak bisa dibaca atau terlalu panjang.
+- **Desain.** Token ditambahkan di `src/index.css`. Animasi hanya aktif dalam `prefers-reduced-motion: no-preference`. Command palette dan kartu pertama kali memakai dialog native sehingga fokus dan Esc ditangani browser.
+- **Profil perangkat.** `src/lib/device.ts` hanya melaporkan backend WASM yang benar-benar dipakai. Keberadaan WebGPU dilaporkan terpisah sebagai informasi, bukan klaim akselerasi. Mode hemat data menonaktifkan pemuatan model otomatis.

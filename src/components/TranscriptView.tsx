@@ -17,6 +17,8 @@ interface TranscriptViewProps {
   onEditSegment: (index: number, text: string) => void
   /** Shift every segment's timestamps by offsetMs */
   onShiftSegments: (offsetMs: number) => void
+  /** Reports the current playback position to the parent, for editing tools */
+  onPlayhead?: (ms: number) => void
 }
 
 function formatTime(ms: number): string {
@@ -201,7 +203,7 @@ function KaraokeView({
   )
 }
 
-export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, onEditSegment, onShiftSegments }: TranscriptViewProps) {
+export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, onEditSegment, onShiftSegments, onPlayhead }: TranscriptViewProps) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [playState, setPlayState] = useState<'stopped' | 'playing' | 'paused'>('stopped')
@@ -215,6 +217,10 @@ export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, 
   const startedAtRef = useRef(0)
   const pausedOffsetRef = useRef(0)
   const rafRef = useRef<number | null>(null)
+  const onPlayheadRef = useRef(onPlayhead)
+  useEffect(() => {
+    onPlayheadRef.current = onPlayhead
+  }, [onPlayhead])
 
   const matchCount = useMemo(() => {
     if (!query) return 0
@@ -263,6 +269,7 @@ export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, 
     const elapsed = (ctx.currentTime - startedAtRef.current) * 1000
     const position = pausedOffsetRef.current + elapsed
     setPlayheadMs(position)
+    onPlayheadRef.current?.(position)
     rafRef.current = requestAnimationFrame(tick)
   }, [])
 
@@ -330,6 +337,7 @@ export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, 
   const seekTo = useCallback(
     (ms: number) => {
       startPlayback(Math.max(0, ms))
+      onPlayheadRef.current?.(Math.max(0, ms))
     },
     [startPlayback],
   )

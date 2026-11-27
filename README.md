@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
   <img src="public/icon.svg" alt="Koe logo" width="120" />
   <h1>Koe: Private Transcription in Your Browser</h1>
   <p><b>Transcribe audio and video to text in your browser, free and unlimited,<br/>
@@ -62,6 +62,7 @@
 | **Silence trimming** | Near silent windows are skipped, removing hallucinated filler |
 | **Karaoke word mode** | Word-level timestamps highlight each word as it is spoken |
 | **Keyboard shortcuts** | Space toggles playback; / focuses search |
+| **Project library** | Finished transcripts are saved on this device; reopen them with their audio and settings |
 | **Batch queue** | Queue several files and download all results as a ZIP |
 | **Safe cancellation** | Cancel between 30-second windows; the worker is terminated and recreated |
 
@@ -72,9 +73,11 @@
 | **Plain text** | TXT for reading and pasting anywhere |
 | **Subtitles** | SRT and VTT with accurate per-segment timestamps |
 | **Structured data** | JSON with per-segment start and end timestamps in milliseconds |
+| **Markdown and presets** | Markdown with chapters, short caption lines and clean paragraphs |
 | **Spreadsheet data** | CSV with per-segment timestamps, opens in Excel with a BOM |
 | **Copy and download** | One click to clipboard, or save the chosen format per file |
 | **ZIP export** | Download every finished transcript in one archive, including each standalone viewer page |
+| **Read-only share link** | A compressed transcript carried in a URL, with no upload or account |
 | **Waveform with seek** | Canvas waveform with progress fill; click anywhere to jump the player |
 | **Playback sync** | Listen to the audio with the current segment highlighted; click any timestamp to jump |
 | **Standalone viewer export** | Self-contained HTML page with the transcript and the embedded audio; open it offline anywhere |
@@ -104,6 +107,9 @@
 | **English and Indonesian** | Full UI in both languages, remembered between sessions |
 | **Light, dark, and system themes** | Three-way toggle in the header; follows your choice or the system |
 | **Installable PWA** | Add koe to your home screen or app launcher |
+| **Command palette** | Press Ctrl K to jump to any action |
+| **Undo and redo** | Revert transcript edits, timestamp shifts and cleanup |
+| **Mobile navigation** | Compact navigation and touch friendly controls |
 
 ### Privacy
 

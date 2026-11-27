@@ -1,7 +1,32 @@
-﻿# Changelog
+# Changelog
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v1.9.0
+
+Koe berubah jadi ruang kerja: transkrip selesai tersimpan di perangkat, edit punya riwayat, dan palette perintah menjangkau semua aksi.
+
+### Fitur baru
+
+- **Pustaka proyek.** Transkrip selesai tersimpan di IndexedDB dan bisa dibuka ulang dari Beranda atau Proyek beserta pengaturannya dan audio bila disimpan.
+- **Simpan otomatis dan catatan.** Nama, catatan, dan status favorit tersimpan otomatis; pekerjaan selesai tetap ada setelah halaman dimuat ulang.
+- **Urungkan dan ulangi.** Edit transkrip, geser timestamp, pembersihan, dan cari ganti bisa dibatalkan.
+- **Alat edit.** Cari ganti dengan regex dan pembedaan huruf, pembersihan teks, deteksi pengulangan, pembuatan bab, penetapan pembicara, pisah dan gabung, serta ekspor klip WAV dari rentang A-B.
+- **Preset ekspor.** Markdown dengan bab, baris caption pendek, dan paragraf bersih melengkapi daftar format yang sudah ada.
+- **Tautan berbagi.** Transkrip hanya-baca terkompresi dikirim lewat hash URL; tidak ada yang diunggah.
+- **Palette perintah.** Ctrl K membuka daftar aksi navigasi dan hasil yang bisa dicari.
+- **Halaman Beranda dan Proyek.** Pekerjaan terbaru, pencarian, favorit, pengukur penyimpanan, dan pengaturan audio per proyek.
+
+### Peningkatan
+
+- **Token desain dan animasi.** Satu set variabel jarak, radius, dan durasi memakai permukaan baru; animasi aktif hanya bila pengguna mengizinkan gerakan.
+- **Dialog native.** Palette dan kartu pertama kali memakai elemen dialog bawaan platform untuk fokus dan tombol Esc.
+- **Profil perangkat.** UI menampilkan jumlah thread, memori, dan model yang disarankan, plus jalur hemat data yang menonaktifkan pemuatan model otomatis.
+- **Arsip ZIP lebih lengkap.** Ekspor kini menyertakan Markdown, teks bab, metadata pengaturan, dan viewer mandiri.
+
+### Perbaikan bug
+
+- **Payload berbagi divalidasi.** Tautan rusak atau terlalu besar ditolak sebelum ditampilkan.
 ## v1.8.0
 
 Rilis fokus: sorot kata karaoke, ekspor spreadsheet, dan timestamp tingkat kata yang benar-benar jalan di model tertanam.
