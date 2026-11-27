@@ -19,6 +19,12 @@ interface TranscriptViewProps {
   onShiftSegments: (offsetMs: number) => void
   /** Reports the current playback position to the parent, for editing tools */
   onPlayhead?: (ms: number) => void
+  /** Translated text aligned by segment index */
+  translations?: string[]
+  /** Show both source and translation under each timestamp */
+  showTranslation?: boolean
+  /** Make the translation the primary reading text */
+  preferTranslation?: boolean
 }
 
 function formatTime(ms: number): string {
@@ -203,7 +209,7 @@ function KaraokeView({
   )
 }
 
-export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, onEditSegment, onShiftSegments, onPlayhead }: TranscriptViewProps) {
+export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, onEditSegment, onShiftSegments, onPlayhead, translations, showTranslation, preferTranslation }: TranscriptViewProps) {
   const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [playState, setPlayState] = useState<'stopped' | 'playing' | 'paused'>('stopped')
@@ -418,7 +424,11 @@ export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, 
           <ol className="space-y-1">
             {segments.map((segment, index) => {
               const isCurrent = index === currentSegmentIndex
-              const noHit = query.length > 0 && !segment.text.toLowerCase().includes(query.toLowerCase())
+              const translated = translations?.[index] ?? ''
+              const editable = !(translated && (showTranslation || preferTranslation))
+              const primary = preferTranslation && translated ? translated : segment.text
+              const secondary = showTranslation && translated ? (preferTranslation ? segment.text : translated) : ''
+              const noHit = query.length > 0 && !`${segment.text} ${translated}`.toLowerCase().includes(query.toLowerCase())
               return (
                 <li
                   key={index}
@@ -438,36 +448,43 @@ export function TranscriptView({ getPcm, canPlay, segments, words, displayMode, 
                   >
                     {formatTime(segment.startMs)}
                   </button>
-                  {editingIndex === index ? (
-                    <textarea
-                      autoFocus
-                      rows={1}
-                      value={segment.text}
-                      aria-label={t('results.editHint')}
-                      onChange={(event) => {
-                        onEditSegment(index, event.target.value)
-                        event.target.style.height = 'auto'
-                        event.target.style.height = `${event.target.scrollHeight}px`
-                      }}
-                      onBlur={() => setEditingIndex(null)}
-                      ref={(el) => {
-                        if (el) {
-                          el.style.height = 'auto'
-                          el.style.height = `${el.scrollHeight}px`
-                        }
-                      }}
-                      className="min-h-6 flex-1 resize-none overflow-hidden bg-transparent text-sm leading-snug text-neutral-800 outline-none focus:rounded-md focus:ring-2 focus:ring-coral/30 dark:text-warm/90"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setEditingIndex(index)}
-                      className="min-h-6 flex-1 text-left text-sm leading-snug text-neutral-800 outline-none focus:rounded-md focus:ring-2 focus:ring-coral/30 dark:text-warm/90"
-                      aria-label={t('results.editHint')}
-                    >
-                      {highlight(segment.text, query)}
-                    </button>
-                  )}
+                  <div className="min-w-0 flex-1">
+                    {editingIndex === index && editable ? (
+                      <textarea
+                        autoFocus
+                        rows={1}
+                        value={segment.text}
+                        aria-label={t('results.editHint')}
+                        onChange={(event) => {
+                          onEditSegment(index, event.target.value)
+                          event.target.style.height = 'auto'
+                          event.target.style.height = `${event.target.scrollHeight}px`
+                        }}
+                        onBlur={() => setEditingIndex(null)}
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = 'auto'
+                            el.style.height = `${el.scrollHeight}px`
+                          }
+                        }}
+                        className="min-h-6 w-full resize-none overflow-hidden bg-transparent text-sm leading-snug text-neutral-800 outline-none focus:rounded-md focus:ring-2 focus:ring-coral/30 dark:text-warm/90"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { if (editable) setEditingIndex(index) }}
+                        className="min-h-6 w-full text-left text-sm leading-snug text-neutral-800 outline-none focus:rounded-md focus:ring-2 focus:ring-coral/30 dark:text-warm/90"
+                        aria-label={editable ? t('results.editHint') : undefined}
+                      >
+                        {highlight(primary, query)}
+                      </button>
+                    )}
+                    {secondary && (
+                      <p className="mt-0.5 text-xs leading-snug text-neutral-500 dark:text-neutral-400">
+                        {highlight(secondary, query)}
+                      </p>
+                    )}
+                  </div>
                 </li>
               )
             })}

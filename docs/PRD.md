@@ -327,3 +327,16 @@ Dieksekusi pada 2026-11-28.
 - **Manajer model.** Badge rekomendasi mengikuti profil perangkat. Model tertanam ditandai siap offline. Estimasi waktu unduhan dihitung dari persentase dan waktu mulai per file, lalu di-reset saat model siap atau unduhan dibatalkan.
 - **Cetak.** `src/index.css` menyembunyikan header, footer, dan kontrol saat `@media print`, menyisakan transkrip untuk dibaca atau disimpan sebagai PDF.
 - **Batasan yang tetap jujur.** WebGPU hanya dilaporkan sebagai tersedia, belum dipakai untuk inferensi. Jendela transkripsi tetap 30 detik tanpa overlap. Deteksi suara memakai ambang puncak sederhana, bukan model VAD.
+
+
+## Bagian 23: Catatan Implementasi v2.1.0
+
+Dieksekusi pada 2026-11-28.
+
+- **Permintaan bahasa.** Whisper hanya punya `task: 'translate'` ke English. Untuk Indonesian dipakai jalur dua tahap: Whisper menghasilkan English, lalu `translate.worker.ts` menerjemahkan per segmen memakai OPUS-MT. Model diunduh on demand dari Hugging Face, tidak ditambahkan ke repo.
+- **Ukuran dan lisensi diukur dari katalog HF.** OPUS-MT terkuantisasi sekitar 100 MB per pasangan bahasa. NLLB 200 distilled 600M terkuantisasi sekitar 895 MB dan berlisensi CC BY-NC 4.0. OPUS-MT berlisensi CC BY 4.0. Semua dicantumkan di panel kredit model dan help.
+- **Worker terjemahan.** `src/worker/translate.worker.ts` memakai `pipeline('translation', ..., { dtype: 'q8' })` dan path WASM lokal yang sama dengan worker transkrip, supaya CSP tidak memblokir jsdelivr. Pesan `translate`, `progress`, dan `translated` didefinisikan di `src/lib/messages.ts`.
+- **Bahasa terdeteksi.** Worker transkrip mengirim pesan `detected-language` dari keluaran Whisper. Tidak ada skor keyakinan yang dibuat-buat karena API tidak menyediakannya.
+- **Teks dan ekspor.** `src/lib/translate.ts` berisi daftar target, pemetaan FLORES, pemotongan teks panjang, glosarium, dan cache localStorage. `src/format/format.ts` mendapat `toBilingualSrt`, `toBilingualVtt`, `toBilingualCsv`, dan `toBilingualMarkdown`.
+- **Tampilan.** `TranscriptView` bisa menampilkan asli, terjemahan, atau keduanya. Edit dinonaktifkan saat terjemahan ditampilkan supaya hasil model tidak tertimpa.
+- **Batasan.** Terjemahan bergantung pada kualitas model OPUS-MT, bukan terjemahan manusia. NLLB tidak dipakai untuk kerja komersial tanpa peninjauan lisensi.

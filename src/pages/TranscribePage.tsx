@@ -33,6 +33,18 @@ import { decodeShare, shareUrl, type SharePayload } from '../lib/share'
 import { detectDevice, isSaveData, type DeviceProfile } from '../lib/device'
 import { getAudio, putAudio, saveProject, type Project } from '../lib/projects'
 import type { RestoreRequest } from '../App'
+import {
+  TRANSLATION_TARGETS,
+  floresFor,
+  getTranslationTarget,
+} from '../lib/translate'
+import type { FromTranslateWorker, ToTranslateWorker, TranslationTargetInfo } from '../lib/messages'
+import {
+  toBilingualCsv,
+  toBilingualMarkdown,
+  toBilingualSrt,
+  toBilingualVtt,
+} from '../format/format'
 
 type ItemStatus = 'decoding' | 'ready' | 'processing' | 'done' | 'error'
 
@@ -54,6 +66,10 @@ interface QueueItem {
   notes: string
   keepAudio: boolean
   createdAt: number
+  translations?: string[]
+  translationLang?: string
+  glossary: string
+  detectedLanguage?: string
 }
 
 interface DownloadState {
@@ -74,6 +90,7 @@ interface SavedSettings {
   displayMode?: 'lines' | 'karaoke'
   outputFormat?: OutputFormat
   keepAudio?: boolean
+  translateTarget?: string
 }
 
 function loadSettings(): SavedSettings {
@@ -115,6 +132,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
   const [language, setLanguage] = useState(initial.language ?? 'indonesian')
   const [model, setModel] = useState<ModelId>(initial.model ?? DEFAULT_MODEL)
   const [task, setTask] = useState<Task>(initial.task ?? 'transcribe')
+  const [translateTarget, setTranslateTarget] = useState<string>(initial.translateTarget ?? 'en')
   const [displayMode, setDisplayMode] = useState<'lines' | 'karaoke'>(initial.displayMode ?? 'lines')
   const [outputFormat, setOutputFormat] = useState<OutputFormat>(initial.outputFormat ?? 'txt')
   const [keepAudio, setKeepAudio] = useState(initial.keepAudio ?? false)
@@ -136,8 +154,14 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
   const [clipRange, setClipRange] = useState<{ startMs: number; endMs: number } | null>(null)
   const [trimIndex, setTrimIndex] = useState(0)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const [translateProgress, setTranslateProgress] = useState<{ active: boolean; percent: number; label: string }>({ active: false, percent: 0, label: '' })
+  const [viewLang, setViewLang] = useState<'original' | 'translated'>('original')
+  const [showBoth, setShowBoth] = useState(false)
+  const [detectedLanguage, setDetectedLanguage] = useState('')
 
   const workerRef = useRef<Worker | null>(null)
+  const translateWorkerRef = useRef<Worker | null>(null)
+  const translateActiveRef = useRef<string | null>(null)
   const pcmStoreRef = useRef(new Map<string, Float32Array>())
   const fileStoreRef = useRef(new Map<string, File>())
   const [pcmIds, setPcmIds] = useState<Set<string>>(new Set())
@@ -150,12 +174,16 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
   const itemsRef = useRef(items)
   const playheadRef = useRef(0)
   const modelRef = useRef(model)
+  const translateTargetRef = useRef(translateTarget)
   useEffect(() => {
     itemsRef.current = items
   }, [items])
   useEffect(() => {
     modelRef.current = model
   }, [model])
+  useEffect(() => {
+    translateTargetRef.current = translateTarget
+  }, [translateTarget])
 
   const createWorker = useCallback((): Worker => {
     if (workerRef.current) return workerRef.current
@@ -203,6 +231,12 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
           )
           break
         }
+        case 'detected-language': {
+          setDetectedLanguage(message.language)
+          const id = activeIdRef.current
+          if (id) setItems((current) => current.map((item) => (item.id === id ? { ...item, detectedLanguage: message.language } : item)))
+          break
+        }
         case 'words': {
           const id = activeIdRef.current
           if (!id) break
@@ -230,6 +264,10 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
             current.map((item) => (item.id === id ? { ...item, status: 'done', percent: 100 } : item)),
           )
           activeIdRef.current = null
+          const finished = itemsRef.current.find((item) => item.id === id)
+          if (finished && translateTargetRef.current !== 'en') {
+            window.setTimeout(() => startTranslationRef.current(finished), 0)
+          }
           startNextRef.current()
           break
         }
@@ -314,7 +352,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
       pcm: copy,
       modelId: modelRef.current,
       language: language === 'auto' ? null : language,
-      task,
+      task: translateTargetRef.current !== 'en' ? 'translate' : task,
       granularity: displayMode === 'karaoke' ? 'word' : 'segment',
     }
     worker.postMessage(message, [copy.buffer])
@@ -337,6 +375,66 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
     // oxlint-disable-next-line react/immutability -- latest-callback ref pattern
     startNextRef.current = startNext
   }, [startNext])
+
+  const createTranslateWorker = useCallback((): Worker => {
+    if (translateWorkerRef.current) return translateWorkerRef.current
+    const worker = new Worker(new URL('../worker/translate.worker.ts', import.meta.url), {
+      type: 'module',
+      name: 'koe-translate',
+    })
+    worker.addEventListener('message', (event: MessageEvent<FromTranslateWorker>) => {
+      const message = event.data
+      if (message.type === 'progress') {
+        setTranslateProgress((current) => ({ ...current, percent: message.percent }))
+        return
+      }
+      if (message.type === 'translated') {
+        const id = translateActiveRef.current
+        if (id) {
+          setItems((current) => current.map((item) => (
+            item.id === id ? { ...item, translations: message.texts, translationLang: translateTargetRef.current } : item
+          )))
+        }
+        translateActiveRef.current = null
+        setTranslateProgress({ active: false, percent: 100, label: '' })
+        return
+      }
+      if (message.type === 'error') {
+        translateActiveRef.current = null
+        setTranslateProgress({ active: false, percent: 0, label: message.message })
+      }
+    })
+    translateWorkerRef.current = worker
+    return worker
+  }, [])
+
+  const startTranslation = useCallback((item: QueueItem) => {
+    const target = getTranslationTarget(translateTargetRef.current)
+    if (!target) return
+    const texts = item.segments.map((segment) => segment.text)
+    if (texts.length === 0) return
+    translateActiveRef.current = item.id
+    setTranslateProgress({ active: true, percent: 0, label: target.label })
+    const worker = createTranslateWorker()
+    const sourceLang = item.detectedLanguage ?? 'english'
+    const message: ToTranslateWorker = {
+      type: 'translate',
+      texts,
+      modelId: target.hfId,
+      sourceLang,
+      targetLang: translateTargetRef.current,
+      glossary: item.glossary.split('\n').map((line) => line.trim()).filter(Boolean),
+      flores: target.flores,
+      sourceFlores: target.flores ? floresFor(sourceLang) : undefined,
+    }
+    worker.postMessage(message)
+  }, [createTranslateWorker])
+
+  const startTranslationRef = useRef(startTranslation)
+  useEffect(() => {
+    // oxlint-disable-next-line react/immutability -- latest-callback ref pattern
+    startTranslationRef.current = startTranslation
+  }, [startTranslation])
 
   const initModel = useCallback(
     (modelId: ModelId, pcmItemId?: string) => {
@@ -435,6 +533,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
         notes: '',
         keepAudio,
         createdAt: Date.now(),
+        glossary: '',
       }))
       setItems((current) => [...current, ...created])
       for (const [index, file] of files.entries()) {
@@ -493,8 +592,8 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
 
   // Settings follow the user between sessions.
   useEffect(() => {
-    persistSettings({ language, model, task, displayMode, outputFormat, keepAudio })
-  }, [language, model, task, displayMode, outputFormat, keepAudio])
+    persistSettings({ language, model, task, displayMode, outputFormat, keepAudio, translateTarget })
+  }, [language, model, task, displayMode, outputFormat, keepAudio, translateTarget])
 
   useEffect(() => {
     void detectDevice().then(setDevice)
@@ -528,6 +627,10 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
       notes: project.notes,
       keepAudio: project.keepAudio,
       createdAt: project.createdAt,
+      translations: project.translations,
+      translationLang: project.translationLang,
+      glossary: project.glossary ?? '',
+      detectedLanguage: project.detectedLanguage,
     }
     // Restore the saved project into the working queue.
     // oxlint-disable-next-line react/set-state-in-effect
@@ -581,6 +684,10 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
           durationSec: item.durationSec,
           sizeBytes: item.sizeBytes,
           keepAudio: item.keepAudio,
+          translations: item.translations,
+          translationLang: item.translationLang,
+          glossary: item.glossary,
+          detectedLanguage: item.detectedLanguage,
         }
         await saveProject(project)
         if (item.keepAudio) {
@@ -620,8 +727,11 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
     // so the next run reloads from local cache, not the network.
     workerRef.current?.terminate()
     workerRef.current = null
+    translateWorkerRef.current?.terminate()
+    translateWorkerRef.current = null
     chainRef.current = false
     activeIdRef.current = null
+    translateActiveRef.current = null
     pendingAfterReadyRef.current = null
     setDownload(idleDownload)
     setItems((current) =>
@@ -748,6 +858,25 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
     return formatTranscript(item.segments, outputFormat)
   }, [preset, chapterGap, outputFormat])
 
+  const downloadBilingual = useCallback((item: QueueItem, format: 'srt' | 'vtt' | 'csv' | 'md') => {
+    if (!item.translations || item.translations.length === 0) return
+    const content = format === 'srt'
+      ? toBilingualSrt(item.segments, item.translations)
+      : format === 'vtt'
+        ? toBilingualVtt(item.segments, item.translations)
+        : format === 'csv'
+          ? toBilingualCsv(item.segments, item.translations)
+          : toBilingualMarkdown(item.segments, item.translations, item.name)
+    const mime = format === 'csv' ? 'text/csv;charset=utf-8' : format === 'md' ? 'text/markdown;charset=utf-8' : format === 'vtt' ? 'text/vtt;charset=utf-8' : 'application/x-subrip;charset=utf-8'
+    const blob = new Blob([content], { type: mime })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${item.name.replace(/\.[^.]+$/, '')}.bilingual.${format}`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }, [])
+
   const shareItem = useCallback(async (item: QueueItem) => {
     const payload: SharePayload = {
       title: item.name,
@@ -851,6 +980,8 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
     () => () => {
       workerRef.current?.terminate()
       workerRef.current = null
+      translateWorkerRef.current?.terminate()
+      translateWorkerRef.current = null
       pcmStoreRef.current.clear()
       fileStoreRef.current.clear()
       setPcmIds(new Set())
@@ -1088,7 +1219,31 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
               <option value="transcribe">{t('step2.transcribe')}</option>
               <option value="translate">{t('step2.translate')}</option>
             </select>
+            {task === 'translate' && (
+              <p className="mt-1 text-[11px] font-semibold text-neutral-500 dark:text-neutral-400">
+                {translateTarget === 'en' ? t('translate.nativeNote') : t('translate.twoStageNote')}
+              </p>
+            )}
           </label>
+
+          {task === 'translate' && (
+            <label className="block">
+              <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('translate.target')}</span>
+              <select
+                value={translateTarget}
+                onChange={(event) => setTranslateTarget(event.target.value)}
+                data-testid="translate-target"
+                className="mt-1 w-full rounded-xl border border-ai/20 bg-white px-3 py-2.5 text-sm font-semibold text-neutral-800 outline-none focus:ring-2 focus:ring-coral/50 dark:border-warm/15 dark:bg-ai dark:text-warm"
+              >
+                <option value="en">{t('translate.englishNative')}</option>
+                {TRANSLATION_TARGETS.map((target: TranslationTargetInfo) => (
+                  <option key={target.code} value={target.code}>
+                    {target.label} ({Math.round(target.approxBytes / 1024 / 1024)} MB)
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <label className="block">
             <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('step2.outputFormat')}</span>
@@ -1176,6 +1331,14 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
                 </div>
               </div>
             )}
+              {detectedLanguage && (
+                <p className="mt-2 text-xs font-bold text-ai dark:text-warm" data-testid="detected-language">
+                  {t('translate.detected')}: {detectedLanguage}
+                </p>
+              )}
+              {translateProgress.label && !translateProgress.active && (
+                <p className="mt-2 text-xs font-bold text-red-500" role="alert">{translateProgress.label}</p>
+              )}
           </div>
         </div>
       </section>
@@ -1187,6 +1350,12 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
             <h2 id="step3-title" className="text-xs font-black uppercase tracking-widest text-ai/70 dark:text-warm/70">
               3 · {t('step3.title')}
             </h2>
+            {translateProgress.active && (
+              <span className="flex items-center gap-2 text-xs font-bold text-coral" role="status" aria-live="polite">
+                {t('translate.working')} · {translateProgress.percent}%
+                <span className="inline-block h-2 w-2 animate-ping rounded-full bg-coral" />
+              </span>
+            )}
             {doneItems.length > 1 && (
               <button
                 type="button"
@@ -1289,6 +1458,18 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
                   <p className="border-b border-ai/10 px-4 py-2 text-xs font-semibold text-coral dark:border-warm/10" role="status">
                     {shareLink.startsWith('http') ? <a href={shareLink} className="underline" target="_blank" rel="noreferrer">{shareLink}</a> : shareLink}
                   </p>
+                )}
+                {item.translations && item.translations.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 border-b border-ai/10 px-4 py-2 dark:border-warm/10" data-testid="bilingual-controls">
+                    <span className="text-xs font-extrabold text-ai dark:text-warm">{t('translate.view')}:</span>
+                    <button type="button" onClick={() => { setViewLang('original'); setShowBoth(false) }} aria-pressed={viewLang === 'original' && !showBoth} className={['rounded-lg px-3 py-1.5 text-xs font-bold', viewLang === 'original' && !showBoth ? 'bg-ai text-warm' : 'border border-ai/25 text-ai dark:border-warm/20 dark:text-warm'].join(' ')}>{t('translate.viewOriginal')}</button>
+                    <button type="button" onClick={() => { setViewLang('translated'); setShowBoth(false) }} aria-pressed={viewLang === 'translated' && !showBoth} className={['rounded-lg px-3 py-1.5 text-xs font-bold', viewLang === 'translated' && !showBoth ? 'bg-ai text-warm' : 'border border-ai/25 text-ai dark:border-warm/20 dark:text-warm'].join(' ')}>{t('translate.viewTranslated')}</button>
+                    <button type="button" onClick={() => setShowBoth((current) => !current)} aria-pressed={showBoth} className={['rounded-lg px-3 py-1.5 text-xs font-bold', showBoth ? 'bg-coral text-[#1A1207]' : 'border border-ai/25 text-ai dark:border-warm/20 dark:text-warm'].join(' ')}>{t('translate.viewBoth')}</button>
+                    <button type="button" onClick={() => void downloadBilingual(item, 'srt')} className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm">SRT</button>
+                    <button type="button" onClick={() => void downloadBilingual(item, 'vtt')} className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm">VTT</button>
+                    <button type="button" onClick={() => void downloadBilingual(item, 'csv')} className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm">CSV</button>
+                    <button type="button" onClick={() => void downloadBilingual(item, 'md')} className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai dark:border-warm/20 dark:text-warm">MD</button>
+                  </div>
                 )}
                 {focusId === item.id && (
                   <div className="space-y-4 border-b border-ai/10 bg-ai/5 p-4 dark:border-warm/10 dark:bg-warm/5" data-testid="editor-tools">
@@ -1473,6 +1654,24 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
                       {(!clipRange || clipRange.endMs <= clipRange.startMs) && <span className="text-xs text-neutral-500">{t('editor.clipNone')}</span>}
                     </div>
                     <label className="block">
+                      <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('translate.glossary')}</span>
+                      <textarea
+                        value={item.glossary}
+                        onChange={(event) => setItems((current) => current.map((entry) => (entry.id === item.id ? { ...entry, glossary: event.target.value } : entry)))}
+                        rows={2}
+                        placeholder={t('translate.glossaryHint')}
+                        className="mt-1 w-full rounded-lg border border-ai/20 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-coral/50 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => startTranslation(item)}
+                        disabled={translateProgress.active}
+                        className="mt-2 rounded-lg bg-coral px-3 py-2 text-xs font-extrabold text-[#1A1207] disabled:opacity-50"
+                      >
+                        {t('translate.runAgain')}
+                      </button>
+                    </label>
+                    <label className="block">
                       <span className="text-xs font-extrabold text-neutral-600 dark:text-neutral-300">{t('projects.notes')}</span>
                       <textarea
                         value={item.notes}
@@ -1520,6 +1719,9 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
                   segments={item.segments}
                   words={item.words}
                   displayMode={displayMode}
+                  translations={item.translations}
+                  showTranslation={showBoth}
+                  preferTranslation={viewLang === 'translated'}
                   onPlayhead={(ms) => { playheadRef.current = ms }}
                   onShiftSegments={(offsetMs) =>
                     updateSegments(item.id, item.segments.map((segment) => ({

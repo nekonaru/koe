@@ -183,6 +183,7 @@ async function handleTranscribe(
   const transcriber = await getTranscriber(modelId)
   const totalWindows = Math.max(1, Math.ceil(pcm.length / WINDOW_SAMPLES))
   const wordsOut: Array<import('../lib/messages').KaraokeWord> = []
+  let detectedLanguage: string | null = null
 
   for (let index = 0; index < totalWindows; index += 1) {
     if (cancelRequested) {
@@ -213,6 +214,11 @@ async function handleTranscribe(
     if (language) options.language = language
 
     const output = await transcriber(windowPcm, options)
+    const detected = (output as { language?: string }).language
+    if (!detectedLanguage && typeof detected === 'string' && detected.length > 0) {
+      detectedLanguage = detected
+      post({ type: 'detected-language', language: detected })
+    }
     const rawChunks: Array<{ timestamp?: [number | null, number | null]; text?: string }> =
       (output as { chunks?: Array<{ timestamp?: [number | null, number | null]; text?: string }> }).chunks ?? []
 

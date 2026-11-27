@@ -61,6 +61,7 @@
 | **Live progress** | Per-window progress bar, elapsed time, and segments streaming in as they are transcribed |
 | **Silence trimming** | Near silent windows are skipped, removing hallucinated filler |
 | **Karaoke word mode** | Word-level timestamps highlight each word as it is spoken |
+| **Translation targets** | Translate to Indonesian and other languages offline after a one-time model download |
 | **Keyboard shortcuts** | Space toggles playback; / focuses search |
 | **Project library** | Finished transcripts are saved on this device; reopen them with their audio and settings |
 | **Batch queue** | Queue several files and download all results as a ZIP |
@@ -75,6 +76,7 @@
 | **Structured data** | JSON with per-segment start and end timestamps in milliseconds |
 | **Markdown and presets** | Markdown with chapters, short caption lines and clean paragraphs |
 | **Spreadsheet data** | CSV with per-segment timestamps, opens in Excel with a BOM |
+| **Bilingual export** | SRT, VTT, CSV and Markdown with original and translated text together |
 | **Copy and download** | One click to clipboard, or save the chosen format per file |
 | **ZIP export** | Download every finished transcript in one archive, including each standalone viewer page |
 | **Read-only share link** | A compressed transcript carried in a URL, with no upload or account |
@@ -109,6 +111,7 @@
 | **Light, dark, and system themes** | Three-way toggle in the header; follows your choice or the system |
 | **Installable PWA** | Add koe to your home screen or app launcher |
 | **Command palette** | Press Ctrl K to jump to any action |
+| **Bilingual view** | Switch between original, translated or both, with a project glossary |
 | **Undo and redo** | Revert transcript edits, timestamp shifts and cleanup |
 | **Segment trimming** | Edit segment start and end times in focus mode |
 | **Print transcript** | A clean print layout from the result header |

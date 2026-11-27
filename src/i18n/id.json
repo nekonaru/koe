@@ -1,4 +1,4 @@
-﻿{
+{
     "app":  {
                 "name":  "Koe",
                 "tagline":  "Audio dan video ke teks, gratis dan privat",
@@ -140,7 +140,9 @@
                  "shortcutsBody":  "Space mengaktifkan atau menghentikan pemutaran untuk item pertama yang bisa diputar. / memfokuskan kotak pencarian. Salin file dari aplikasi lain lalu tekan Ctrl+V di mana pun di halaman untuk menambahkannya ke antrean.",
                  "projectsTitle":  "Proyek dan kerja offline",
                  "shortcutsBody2":  "Ctrl K membuka palette perintah. Space mengaktifkan atau menghentikan pemutaran. / memfokuskan pencarian. Ctrl Z mengurungkan edit.",
-                 "projectsBody":  "Transkrip selesai tersimpan di IndexedDB pada perangkat ini. Audio hanya disimpan saat kamu mengaktifkan Simpan audio pada proyek. Menghapus data situs menghapus proyek dan model."
+                 "projectsBody":  "Transkrip selesai tersimpan di IndexedDB pada perangkat ini. Audio hanya disimpan saat kamu mengaktifkan Simpan audio pada proyek. Menghapus data situs menghapus proyek dan model.",
+                 "translateBody":  "Whisper hanya bisa menerjemahkan ke English. Untuk Indonesian dan bahasa lain, koe membuat transkrip English dulu, lalu model offline terpisah menerjemahkan tiap segmen. Model diunduh sekali, sekitar 100 MB untuk Indonesian, dan tetap di perangkat ini. Opsi multilingual besarukuran sekitar 895 MB dan berlisensi non-komersial.",
+                 "translateTitle":  "Menerjemahkan ke Bahasa Indonesia"
              },
     "footer":  {
                    "openSource":  "Open source di bawah MIT",
@@ -350,5 +352,24 @@
                    "trimSegment":  "Segmen",
                    "trimEnd":  "Selesai (s)",
                    "trimStart":  "Mulai (s)"
-               }
+               },
+    "translate":  {
+                      "attributionTitle":  "Kredit model terjemahan",
+                      "working":  "Menerjemahkan",
+                      "detected":  "Bahasa terdeteksi",
+                      "target":  "Bahasa tujuan",
+                      "viewOriginal":  "Asli",
+                      "englishNative":  "English (langsung dari Whisper)",
+                      "viewBoth":  "Keduanya",
+                      "glossaryHint":  "Nama dan istilah produk yang tidak diubah saat terjemahan",
+                      "source":  "Sumber",
+                      "nativeNote":  "Whisper menerjemahkan ke English langsung dalam satu tahap.",
+                      "view":  "Tampilan",
+                      "license":  "Lisensi",
+                      "glossary":  "Glosarium, satu istilah per baris",
+                      "heavyWarning":  "Unduhan besar, lisensi non-komersial. Pakai hanya bila butuh cakupan bahasa lebih luas.",
+                      "runAgain":  "Jalankan terjemahan lagi",
+                      "twoStageNote":  "Whisper menghasilkan English dulu, lalu model offline terpisah menerjemahkan ke bahasa pilihan.",
+                      "viewTranslated":  "Terjemahan"
+                  }
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { MODELS, formatBytes, type ModelId } from '../lib/models'
 import { deleteModel, estimateStorage, getModelCacheStatus, type ModelCacheStatus, type StorageEstimate } from '../model/manager'
 import { detectDevice, type DeviceProfile } from '../lib/device'
+import { TRANSLATION_TARGETS } from '../lib/translate'
 import { useI18n } from '../i18n/useI18n'
 
 export function ModelManager() {
@@ -112,6 +113,21 @@ export function ModelManager() {
           )
         })}
       </ul>
+
+      <div className="mt-5 border-t border-ai/10 pt-4 dark:border-warm/10">
+        <h3 className="text-xs font-black uppercase tracking-widest text-ai/70 dark:text-warm/70">{t('translate.attributionTitle')}</h3>
+        <ul className="mt-2 space-y-2">
+          {TRANSLATION_TARGETS.map((target) => (
+            <li key={target.code} className="text-[11px] leading-snug text-neutral-500 dark:text-neutral-400">
+              <span className="font-extrabold text-neutral-700 dark:text-warm/90">{target.label}</span>
+              {' · '}{t('translate.source')}: {target.hfId}
+              {' · '}{t('translate.license')}: {target.license}
+              {' · '}{formatBytes(target.approxBytes)}
+              {target.heavy && <span className="block font-bold text-amber-600 dark:text-amber-400">{t('translate.heavyWarning')}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   )
 }

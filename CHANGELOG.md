@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.1.0
+
+Koe can now translate a finished transcript into Indonesian and several other languages, entirely on the device.
+
+### New features
+
+- **Indonesian translation.** Whisper first produces an English transcript, then an offline OPUS-MT model translates it into Indonesian. The model downloads once and stays cached.
+- **More targets.** French, Spanish and German use the same two-stage path. A large multilingual NLLB option is available with an explicit size and license warning.
+- **Bilingual view.** Switch between original, translated and side by side readings. Editing stays on the original so translations are never overwritten by hand.
+- **Bilingual export.** SRT, VTT, CSV and Markdown can carry original and translated text together.
+- **Project glossary.** List names and product terms that must survive translation unchanged.
+- **Translation cache.** Identical segments are translated once and reused across runs.
+- **Detected language.** The UI reports the language Whisper detected and lets you override it before transcribing.
+- **Model credits.** The model manager lists every translation model with its source, size and license.
+
+### Improvements
+
+- **Two-stage clarity.** The settings panel explains why Indonesian needs a second model while English stays native to Whisper.
+- **Local ONNX Runtime paths.** The translation worker uses the self-hosted WASM files, so the strict content security policy still applies.
+
+### Bug fixes
+
+- **No silent translation failure.** Translation progress, errors and completion are now reported in the result header.
 ## v2.0.0
 
 A milestone release: the offline viewer becomes a full player, segment timing is editable, and model choices are easier to judge.
