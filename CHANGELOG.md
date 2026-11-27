@@ -2,6 +2,26 @@
 
 All notable changes to this project are documented in this file.
 
+## v2.0.0
+
+A milestone release: the offline viewer becomes a full player, segment timing is editable, and model choices are easier to judge.
+
+### New features
+
+- **Viewer 2.0.** The standalone HTML page now includes karaoke words, transcript search, playback speed, chapter buttons, a light and dark toggle, and a print layout.
+- **Segment trimming.** Focus mode exposes start and end time fields for each segment, so timing fixes do not require replaying the whole file.
+- **Print transcript.** The result header prints a clean reading layout with the app chrome hidden.
+- **Model recommendations.** The model manager marks the suggested model and shows offline readiness beside each bundled model.
+- **Download estimate.** Model downloads show a rough remaining time derived from progress speed.
+
+### Improvements
+
+- **Viewer safety.** All exported titles, words and chapters are HTML escaped before they enter the standalone page.
+- **Metadata in the ZIP.** Each archive keeps a settings file alongside the transcript, Markdown, chapters and viewer.
+
+### Bug fixes
+
+- **Export dependency fixed.** The standalone viewer now receives the current word timestamps and chapters instead of emitting an empty player.
 ## v1.9.0
 
 Koe becomes a workspace: finished transcripts are saved on the device, editing has history, and a command palette reaches every action.

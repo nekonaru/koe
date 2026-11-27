@@ -78,6 +78,7 @@
 | **Salin dan unduh** | Satu klik ke clipboard, atau simpan format pilihan per file |
 | **Ekspor ZIP** | Unduh semua transkrip selesai dalam satu arsip, termasuk halaman viewer mandiri masing-masing |
 | **Tautan berbagi hanya-baca** | Transkrip terkompresi di dalam URL, tanpa upload atau akun |
+| **Viewer 2.0** | HTML mandiri dengan kata karaoke, pencarian, kecepatan, bab, tema, dan cetak |
 | **Waveform dengan seek** | Waveform kanvas dengan isi progress; klik di mana pun untuk melompat |
 | **Sinkron pemutaran** | Dengarkan audio dengan segmen aktif tersorot; klik timestamp mana pun untuk melompat |
 | **Ekspor halaman viewer mandiri** | Halaman HTML self-contained dengan transkrip dan audio tertanam; buka offline di mana saja |
@@ -97,7 +98,7 @@
 | **Model Base** | Tertanam di koe, seimbang antara kecepatan dan akurasi |
 | **Model Small** | Paling akurat dari ketiganya, sekitar 254 MB, diunduh saat dibutuhkan, butuh memori lebih |
 | **Bobot terkuantisasi** | Model Whisper ONNX yang terkuantisasi untuk penggunaan browser |
-| **Pengelola model** | Lihat model mana yang tersimpan, total penyimpanan browser yang terpakai, dan hapus model yang tidak dibutuhkan |
+| **Pengelola model** | Lihat model tersimpan, estimasi unduhan, kesiapan offline, dan rekomendasi model, serta hapus model yang tidak dipakai |
 | **Offline dari awal** | Tiny dan Base langsung jalan, bahkan offline, sejak halaman pertama |
 
 ### Antarmuka
@@ -109,6 +110,8 @@
 | **PWA yang bisa dipasang** | Tambahkan koe ke layar utama atau peluncur aplikasi |
 | **Palette perintah** | Tekan Ctrl K untuk melompat ke aksi apa pun |
 | **Urungkan dan ulangi** | Batalkan edit transkrip, geser timestamp, dan pembersihan teks |
+| **Pemangkasan segmen** | Edit waktu mulai dan selesai segmen di mode fokus |
+| **Cetak transkrip** | Tata letak cetak bersih dari header hasil |
 | **Navigasi mobile** | Navigasi ringkas dan kontrol yang nyaman disentuh |
 
 ### Privasi

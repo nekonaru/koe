@@ -119,3 +119,18 @@ dialog[open] {
     animation: none;
   }
 }
+
+/* Printing a transcript: hide the app chrome and keep the reading surface. */
+@media print {
+  header, footer, .skip-link, button, input, select, textarea {
+    display: none !important;
+  }
+  body, .dark body {
+    background: #fff;
+    color: #000;
+  }
+  main {
+    max-width: none;
+    padding: 0;
+  }
+}
