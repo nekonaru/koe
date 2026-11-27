@@ -315,3 +315,15 @@ Dieksekusi pada 2026-11-28.
 - **Tautan berbagi.** `src/lib/share.ts` memakai CompressionStream deflate dan base64url dengan fallback JSON biasa. Payload divalidasi dan ditolak bila tidak bisa dibaca atau terlalu panjang.
 - **Desain.** Token ditambahkan di `src/index.css`. Animasi hanya aktif dalam `prefers-reduced-motion: no-preference`. Command palette dan kartu pertama kali memakai dialog native sehingga fokus dan Esc ditangani browser.
 - **Profil perangkat.** `src/lib/device.ts` hanya melaporkan backend WASM yang benar-benar dipakai. Keberadaan WebGPU dilaporkan terpisah sebagai informasi, bukan klaim akselerasi. Mode hemat data menonaktifkan pemuatan model otomatis.
+
+
+## Bagian 22: Catatan Implementasi v2.0.0
+
+Dieksekusi pada 2026-11-28.
+
+- **Viewer 2.0.** Fungsi `toStandaloneHtml` di `src/format/format.ts` kini menerima `words` dan `chapters`. Halaman mandiri memuat sorot kata, pencarian, kecepatan putar, tombol bab, toggle tema, dan cetak. Semua nilai dinamis lolos `escapeHtml` sebelum masuk ke HTML.
+- **Ekspor.** Tombol View page dan arsip ZIP meneruskan kata dan bab dari item yang sedang aktif. Sebelumnya opsi tersebut tidak dikirim, sehingga viewer tidak punya data karaoke.
+- **Pemangkasan segmen.** Mode fokus menampilkan pilihan segmen dan kolom waktu mulai serta selesai dalam detik. Perubahan lewat stack riwayat yang sama dengan edit teks.
+- **Manajer model.** Badge rekomendasi mengikuti profil perangkat. Model tertanam ditandai siap offline. Estimasi waktu unduhan dihitung dari persentase dan waktu mulai per file, lalu di-reset saat model siap atau unduhan dibatalkan.
+- **Cetak.** `src/index.css` menyembunyikan header, footer, dan kontrol saat `@media print`, menyisakan transkrip untuk dibaca atau disimpan sebagai PDF.
+- **Batasan yang tetap jujur.** WebGPU hanya dilaporkan sebagai tersedia, belum dipakai untuk inferensi. Jendela transkripsi tetap 30 detik tanpa overlap. Deteksi suara memakai ambang puncak sederhana, bukan model VAD.

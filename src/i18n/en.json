@@ -345,6 +345,10 @@
                    "repeats":  "Possible repeated speech detected",
                    "cleanupHint":  "Capitalize sentences and remove repeated words.",
                    "regex":  "Regular expression",
-                   "clipExport":  "Export WAV clip"
+                   "clipExport":  "Export WAV clip",
+                   "print":  "Print transcript",
+                   "trimSegment":  "Segment",
+                   "trimEnd":  "End (s)",
+                   "trimStart":  "Start (s)"
                }
 }

@@ -8,6 +8,7 @@ import {
   toCsv,
   toJson,
   toSrt,
+  toStandaloneHtml,
   toTxt,
   toVtt,
   type TranscriptSegment,
@@ -109,5 +110,24 @@ describe('outputFileName', () => {
   it('replaces the extension', () => {
     expect(outputFileName('interview.mp4', 'srt')).toBe('interview.srt')
     expect(outputFileName('no-extension', 'vtt')).toBe('no-extension.vtt')
+  })
+})
+
+describe('toStandaloneHtml', () => {
+  it('embeds audio, words, chapters and offline controls', () => {
+    const html = toStandaloneHtml(segments, {
+      title: 'Interview <draft>',
+      audioDataUri: 'data:audio/wav;base64,AAAA',
+      lang: 'en',
+      words: [{ startMs: 0, endMs: 500, text: 'Selamat' }],
+      chapters: [{ title: 'Opening', startMs: 0 }],
+    })
+    expect(html).toContain('Interview &lt;draft&gt;')
+    expect(html).toContain('id="a"')
+    expect(html).toContain('id="q"')
+    expect(html).toContain('class="word"')
+    expect(html).toContain('class="chapter"')
+    expect(html).toContain('window.print()')
+    expect(html).not.toContain('https://')
   })
 })

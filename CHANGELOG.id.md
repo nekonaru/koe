@@ -2,6 +2,26 @@
 
 Semua perubahan penting proyek ini dicatat di file ini.
 
+## v2.0.0
+
+Rilis tonggak: viewer offline jadi pemutar lengkap, waktu segmen bisa diedit, dan pilihan model lebih mudah dinilai.
+
+### Fitur baru
+
+- **Viewer 2.0.** Halaman HTML mandiri kini memuat kata karaoke, pencarian transkrip, kecepatan putar, tombol bab, toggle terang dan gelap, serta tata letak cetak.
+- **Pemangkasan segmen.** Mode fokus menampilkan kolom waktu mulai dan selesai tiap segmen, sehingga perbaikan timing tidak perlu memutar ulang seluruh file.
+- **Cetak transkrip.** Header hasil mencetak tata letak baca bersih tanpa elemen antarmuka aplikasi.
+- **Rekomendasi model.** Manajer model menandai model yang disarankan dan menampilkan kesiapan offline di samping tiap model tertanam.
+- **Estimasi unduhan.** Unduhan model menampilkan perkiraan waktu tersisa berdasarkan kecepatan progres.
+
+### Peningkatan
+
+- **Keamanan viewer.** Semua judul, kata, dan bab diekspor dengan escaping HTML sebelum masuk ke halaman mandiri.
+- **Metadata dalam ZIP.** Setiap arsip menyimpan file pengaturan bersama transkrip, Markdown, bab, dan viewer.
+
+### Perbaikan bug
+
+- **Dependensi ekspor diperbaiki.** Viewer mandiri kini menerima timestamp kata dan bab terkini, bukan pemutar kosong.
 ## v1.9.0
 
 Koe berubah jadi ruang kerja: transkrip selesai tersimpan di perangkat, edit punya riwayat, dan palette perintah menjangkau semua aksi.

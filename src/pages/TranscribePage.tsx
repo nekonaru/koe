@@ -60,9 +60,10 @@ interface DownloadState {
   active: boolean
   file: string
   percent: number
+  etaSec: number
 }
 
-const idleDownload: DownloadState = { active: false, file: '', percent: 0 }
+const idleDownload: DownloadState = { active: false, file: '', percent: 0, etaSec: 0 }
 
 const SETTINGS_KEY = 'koe-settings-v1'
 
@@ -133,6 +134,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
   const [caseSensitive, setCaseSensitive] = useState(false)
   const [chapterGap, setChapterGap] = useState(4)
   const [clipRange, setClipRange] = useState<{ startMs: number; endMs: number } | null>(null)
+  const [trimIndex, setTrimIndex] = useState(0)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
 
   const workerRef = useRef<Worker | null>(null)
@@ -140,6 +142,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
   const fileStoreRef = useRef(new Map<string, File>())
   const [pcmIds, setPcmIds] = useState<Set<string>>(new Set())
   const filePercentsRef = useRef(new Map<string, number>())
+  const downloadStartedRef = useRef(new Map<string, number>())
   const activeIdRef = useRef<string | null>(null)
   const pendingAfterReadyRef = useRef<string | null>(null)
   const pendingInitModelRef = useRef<ModelId | null>(null)
@@ -167,7 +170,12 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
           filePercentsRef.current.set(message.file, message.progress)
           const values = [...filePercentsRef.current.values()]
           const percent = values.length > 0 ? Math.round(values.reduce((a, b) => a + b, 0) / values.length) : 0
-          setDownload({ active: true, file: message.file, percent })
+          const key = message.file || 'init'
+          const started = downloadStartedRef.current.get(key) ?? Date.now()
+          downloadStartedRef.current.set(key, started)
+          const elapsed = Date.now() - started
+          const etaSec = message.progress > 3 ? Math.max(0, Math.round(((elapsed / message.progress) * (100 - message.progress)) / 1000)) : 0
+          setDownload({ active: true, file: message.file, percent, etaSec })
           break
         }
         case 'ready': {
@@ -176,6 +184,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
           setModelReady((current) => ({ ...current, [inited]: true }))
           setDownload(idleDownload)
           filePercentsRef.current.clear()
+          downloadStartedRef.current.clear()
           const pending = pendingAfterReadyRef.current
           pendingAfterReadyRef.current = null
           if (pending) {
@@ -335,7 +344,8 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
       pendingAfterReadyRef.current = pcmItemId ?? null
       pendingInitModelRef.current = modelId
       filePercentsRef.current.clear()
-      setDownload({ active: true, file: '', percent: 0 })
+          downloadStartedRef.current.clear()
+      setDownload({ active: true, file: '', percent: 0, etaSec: 0 })
       worker.postMessage({ type: 'init', modelId } satisfies ToWorker)
     },
     [createWorker],
@@ -686,6 +696,8 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
         title: item.name,
         audioDataUri,
         lang: locale === 'id' ? 'id' : 'en',
+        words: item.words,
+        chapters: buildChapters(item.segments, chapterGap * 1000),
       })
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
@@ -695,7 +707,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
       anchor.click()
       URL.revokeObjectURL(url)
     },
-    [locale],
+    [locale, chapterGap],
   )
 
   const downloadTranscript = useCallback((item: QueueItem) => {
@@ -819,6 +831,8 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
           title: item.name,
           audioDataUri,
           lang: locale === 'id' ? 'id' : 'en',
+          words: item.words,
+          chapters: buildChapters(item.segments, chapterGap * 1000),
         })
         zip.file(`${base}.view.html`, html)
       }
@@ -1155,7 +1169,7 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
               <div className="mt-2">
                 <div className="flex items-center justify-between gap-2 text-xs font-semibold text-neutral-500 dark:text-neutral-400">
                   <span className="truncate">{download.file || t('step2.downloading')}</span>
-                  <span>{download.percent}%</span>
+                  <span>{download.percent}%{download.etaSec > 0 ? ` · ${download.etaSec}s` : ''}</span>
                 </div>
                 <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-ai/10 dark:bg-warm/10" role="progressbar" aria-valuenow={download.percent} aria-valuemin={0} aria-valuemax={100}>
                   <div className="h-full rounded-full bg-coral transition-[width] duration-300" style={{ width: `${download.percent}%` }} />
@@ -1254,6 +1268,13 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
                       className="rounded-lg bg-ai px-3 py-1.5 text-xs font-extrabold text-warm hover:bg-ai-light focus-visible:ring-2 focus-visible:ring-coral/50"
                     >
                       {t('step3.download')} {outputFormat.toUpperCase()}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="rounded-lg border border-ai/25 px-3 py-1.5 text-xs font-extrabold text-ai hover:bg-ai/5 dark:border-warm/20 dark:text-warm"
+                    >
+                      {t('editor.print')}
                     </button>
                     <button
                       type="button"
@@ -1373,6 +1394,50 @@ export function TranscribePage({ restore, onSaved }: { restore?: RestoreRequest 
                           className="w-16 rounded-lg border border-ai/20 bg-white px-2 py-1 dark:border-warm/15 dark:bg-ai dark:text-warm"
                         />
                         {t('editor.chapterGap', { seconds: chapterGap })}
+                      </label>
+                    </div>
+                    <div className="flex flex-wrap items-end gap-3 border-t border-ai/10 pt-3 dark:border-warm/10">
+                      <label className="text-xs font-bold text-neutral-600 dark:text-neutral-300">
+                        {t('editor.trimSegment')}
+                        <select
+                          value={trimIndex}
+                          onChange={(event) => setTrimIndex(Number(event.target.value))}
+                          className="ml-2 rounded-lg border border-ai/20 bg-white px-2 py-1 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                        >
+                          {item.segments.map((_segment, index) => (
+                            <option key={index} value={index}>{index + 1}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="text-xs font-bold text-neutral-600 dark:text-neutral-300">
+                        {t('editor.trimStart')}
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={(item.segments[Math.min(trimIndex, item.segments.length - 1)]?.startMs ?? 0) / 1000}
+                          onChange={(event) => {
+                            const index = Math.min(trimIndex, item.segments.length - 1)
+                            const next = [...item.segments]
+                            if (next[index]) next[index] = { ...next[index], startMs: Math.max(0, Number(event.target.value) * 1000) }
+                            updateSegments(item.id, next)
+                          }}
+                          className="ml-2 w-24 rounded-lg border border-ai/20 bg-white px-2 py-1 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                        />
+                      </label>
+                      <label className="text-xs font-bold text-neutral-600 dark:text-neutral-300">
+                        {t('editor.trimEnd')}
+                        <input
+                          type="number"
+                          step="0.1"
+                          value={(item.segments[Math.min(trimIndex, item.segments.length - 1)]?.endMs ?? 0) / 1000}
+                          onChange={(event) => {
+                            const index = Math.min(trimIndex, item.segments.length - 1)
+                            const next = [...item.segments]
+                            if (next[index]) next[index] = { ...next[index], endMs: Math.max(0, Number(event.target.value) * 1000) }
+                            updateSegments(item.id, next)
+                          }}
+                          className="ml-2 w-24 rounded-lg border border-ai/20 bg-white px-2 py-1 dark:border-warm/15 dark:bg-ai dark:text-warm"
+                        />
                       </label>
                     </div>
                     {detectRepeats(item.segments.map((segment) => segment.text).join(' ')) && (

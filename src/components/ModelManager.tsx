@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { MODELS, formatBytes, type ModelId } from '../lib/models'
 import { deleteModel, estimateStorage, getModelCacheStatus, type ModelCacheStatus, type StorageEstimate } from '../model/manager'
+import { detectDevice, type DeviceProfile } from '../lib/device'
 import { useI18n } from '../i18n/useI18n'
 
 export function ModelManager() {
@@ -9,7 +10,12 @@ export function ModelManager() {
   const [storage, setStorage] = useState<StorageEstimate | null>(null)
   const [deleting, setDeleting] = useState<ModelId | null>(null)
   const [deleted, setDeleted] = useState<ModelId | null>(null)
+  const [profile, setProfile] = useState<DeviceProfile | null>(null)
   const [refreshTick, setRefreshTick] = useState(0)
+
+  useEffect(() => {
+    void detectDevice().then(setProfile)
+  }, [])
 
   const refresh = useCallback(() => setRefreshTick((current) => current + 1), [])
 
@@ -80,13 +86,16 @@ export function ModelManager() {
                   </span>
                 </p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  {bundled
-                    ? t('models.included')
+                  {profile?.recommendation === model.id && (
+                    <span className="mr-2 rounded bg-coral/15 px-2 py-0.5 font-bold text-coral">{t('models.recommend')}</span>
+                  )}
+                  <span>{bundled
+                    ? `${t('models.included')} · ${t('models.offlineReady')}`
                     : status === null
                       ? t('models.checking')
                       : cached
                         ? t('models.cached')
-                        : t('models.notCached')}
+                        : t('models.notCached')}</span>
                 </p>
               </div>
               {cached && !bundled && (

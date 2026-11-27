@@ -345,6 +345,10 @@
                    "repeats":  "Kemungkinan pengulangan terdeteksi",
                    "cleanupHint":  "Kapitalisasi kalimat dan hapus kata berulang.",
                    "regex":  "Ekspresi reguler",
-                   "clipExport":  "Ekspor klip WAV"
+                   "clipExport":  "Ekspor klip WAV",
+                   "print":  "Cetak transkrip",
+                   "trimSegment":  "Segmen",
+                   "trimEnd":  "Selesai (s)",
+                   "trimStart":  "Mulai (s)"
                }
 }

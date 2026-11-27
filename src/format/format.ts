@@ -116,6 +116,10 @@ export interface StandaloneHtmlOptions {
   audioDataUri: string
   /** UI language for the page labels */
   lang: 'en' | 'id'
+  /** Raw word timestamps for karaoke highlighting */
+  words?: ReadonlyArray<{ startMs: number; endMs: number; text: string }>
+  /** Detected chapters for quick navigation */
+  chapters?: ReadonlyArray<{ title: string; startMs: number }>
 }
 
 /**
@@ -127,10 +131,10 @@ export function toStandaloneHtml(
   segments: readonly TranscriptSegment[],
   options: StandaloneHtmlOptions,
 ): string {
-  const { title, audioDataUri, lang } = options
+  const { title, audioDataUri, lang, words, chapters } = options
   const labels = lang === 'id'
-    ? { play: 'Putar dari sini', stats: 'segmen' }
-    : { play: 'Play from here', stats: 'segments' }
+    ? { play: 'Putar dari sini', stats: 'segmen', search: 'Cari di transkrip', speed: 'Kecepatan', theme: 'Tema', print: 'Cetak', chapters: 'Bab', karaoke: 'Karaoke' }
+    : { play: 'Play from here', stats: 'segments', search: 'Search transcript', speed: 'Speed', theme: 'Theme', print: 'Print', chapters: 'Chapters', karaoke: 'Karaoke' }
 
   const rows = segments
     .map((segment) => {
@@ -142,7 +146,16 @@ export function toStandaloneHtml(
     })
     .join('\n')
 
+  const wordSpans = words && words.length > 0
+    ? words.map((word) => `        <span class="word" data-start="${(word.startMs / 1000).toFixed(2)}" data-end="${(word.endMs / 1000).toFixed(2)}">${escapeHtml(word.text)}</span>`).join('\n')
+    : ''
+
+  const chapterRows = chapters && chapters.length > 0
+    ? chapters.map((chapter) => `        <button class="chapter" data-start="${Math.round(chapter.startMs / 1000)}">${formatSrtTime(chapter.startMs).slice(0, 5)} ${escapeHtml(chapter.title)}</button>`).join('\n')
+    : ''
+
   const safeTitle = escapeHtml(title)
+  const safeAudio = escapeHtml(audioDataUri)
 
   return `<!doctype html>
 <html lang="${lang}">
@@ -152,24 +165,47 @@ export function toStandaloneHtml(
 <title>${safeTitle}</title>
 <style>
   :root { color-scheme: dark; }
+  :root.light { color-scheme: light; }
   * { box-sizing: border-box; }
   body {
     margin: 0; background: #141414; color: #FAF7F2;
     font-family: Georgia, 'Times New Roman', serif; line-height: 1.6;
   }
+  :root.light body { background: #FAF7F2; color: #141414; }
   .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; }
   header { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  h1 { font-size: 1.5rem; margin: 0; font-weight: 600; }
+  h1 { font-size: 1.5rem; margin: 0; font-weight: 600; flex: 1; }
   .meta { color: #FAF7F2cc; font-size: 0.85rem; }
+  :root.light .meta { color: #14141499; }
   audio { width: 100%; margin: 20px 0; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  input, select, button {
+    font: inherit; font-size: 0.85rem; border-radius: 8px;
+    border: 1px solid #FAF7F240; background: #ffffff12; color: inherit;
+    padding: 6px 10px;
+  }
+  :root.light input, :root.light select, :root.light button { border-color: #14141430; background: #14141408; }
+  button { cursor: pointer; }
+  input[type="search"] { flex: 1; min-width: 180px; }
   ol { list-style: none; padding: 0; }
   .row { display: flex; gap: 12px; padding: 6px 10px; border-radius: 10px; border-left: 3px solid transparent; cursor: pointer; }
   .row:hover, .row.current { background: rgba(250,247,242,0.07); border-left-color: #FF7A59; }
+  :root.light .row:hover, :root.light .row.current { background: #1414140d; }
   .ts { background: none; border: 0; color: #FF7A59; font-family: ui-monospace, monospace; font-size: 0.8rem; cursor: pointer; padding: 4px 0; }
   .ts:hover { text-decoration: underline; }
   .text { flex: 1; }
+  .chapters { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 20px; }
+  .chapter { font-size: 0.75rem; }
+  .karaoke { font-size: 1.15rem; line-height: 2; margin: 12px 0 24px; }
+  .word { padding: 1px 2px; border-radius: 4px; }
+  .word.active { background: #FF7A59; color: #1A1207; font-weight: 700; }
   footer { color: #FAF7F266; font-size: 0.75rem; margin-top: 32px; }
-  @media (prefers-reduced-motion: no-preference) { .row { transition: background 120ms ease; } }
+  @media (prefers-reduced-motion: no-preference) { .row, .word { transition: background 120ms ease; } }
+  @media print {
+    audio, .controls, .chapters, .ts, button, input, select { display: none !important; }
+    body { background: #fff; color: #000; }
+    .wrap { padding: 0; }
+  }
 </style>
 </head>
 <body>
@@ -178,36 +214,78 @@ export function toStandaloneHtml(
     <h1>${safeTitle}</h1>
     <span class="meta">${segments.length} ${labels.stats}</span>
   </header>
-  <audio id="a" controls preload="auto" src="${audioDataUri}"></audio>
+  <audio id="a" controls preload="auto" src="${safeAudio}"></audio>
+  <div class="controls">
+    <input id="q" type="search" placeholder="${labels.search}" aria-label="${labels.search}">
+    <select id="rate" aria-label="${labels.speed}">
+      <option value="0.75">0.75x</option>
+      <option value="1" selected>1x</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="2">2x</option>
+    </select>
+    <button id="theme" type="button">${labels.theme}</button>
+    <button id="print" type="button">${labels.print}</button>
+  </div>
+${chapterRows ? `  <div class="chapters">\n${chapterRows}\n  </div>` : ''}
+${wordSpans ? `  <section aria-label="${labels.karaoke}"><h2>${labels.karaoke}</h2><p class="karaoke" id="karaoke">\n${wordSpans}\n  </p></section>` : ''}
   <ol id="rows">
 ${rows}
   </ol>
-  <footer>koe · ${safeTitle}</footer>
+  <footer>koe Â· ${safeTitle}</footer>
 </div>
 <script>
-  const audio = document.getElementById('a');
-  const rows = [...document.querySelectorAll('.row')];
+  var audio = document.getElementById('a');
+  var rows = [].slice.call(document.querySelectorAll('.row'));
+  var words = [].slice.call(document.querySelectorAll('.word'));
+  var search = document.getElementById('q');
+  var rate = document.getElementById('rate');
   function playFrom(seconds) {
     audio.currentTime = seconds;
-    audio.play();
+    var p = audio.play();
+    if (p && p.catch) p.catch(function () {});
   }
-  document.getElementById('rows').addEventListener('click', (event) => {
-    const row = event.target.closest('.row');
-    if (!row) return;
-    playFrom(Number(row.dataset.start));
+  document.getElementById('rows').addEventListener('click', function (event) {
+    var row = event.target.closest('.row');
+    if (row) playFrom(Number(row.dataset.start));
   });
-  audio.addEventListener('timeupdate', () => {
-    rows.forEach((row) => row.classList.toggle('current', Number(row.dataset.start) <= audio.currentTime && audio.currentTime < Number(row.dataset.start) + 4));
-    const current = document.querySelector('.row.current');
-    if (current) current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  document.querySelectorAll('.chapter').forEach(function (button) {
+    button.addEventListener('click', function () { playFrom(Number(button.dataset.start)); });
+  });
+  search.addEventListener('input', function () {
+    var needle = search.value.trim().toLowerCase();
+    rows.forEach(function (row) {
+      row.style.display = !needle || row.textContent.toLowerCase().indexOf(needle) >= 0 ? '' : 'none';
+    });
+  });
+  rate.addEventListener('change', function () { audio.playbackRate = Number(rate.value); });
+  document.getElementById('theme').addEventListener('click', function () {
+    document.documentElement.classList.toggle('light');
+  });
+  document.getElementById('print').addEventListener('click', function () { window.print(); });
+  audio.addEventListener('timeupdate', function () {
+    rows.forEach(function (row) {
+      var start = Number(row.dataset.start);
+      row.classList.toggle('current', start <= audio.currentTime && audio.currentTime < start + 4);
+    });
+    words.forEach(function (word) {
+      var start = Number(word.dataset.start);
+      var end = Number(word.dataset.end);
+      word.classList.toggle('active', start <= audio.currentTime && audio.currentTime < end);
+    });
+    var current = document.querySelector('.row.current');
+    if (current && current.scrollIntoView) current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  });
+  document.addEventListener('keydown', function (event) {
+    if (event.target && /INPUT|SELECT|TEXTAREA/.test(event.target.tagName)) return;
+    if (event.code === 'Space') { event.preventDefault(); if (audio.paused) audio.play(); else audio.pause(); }
+    if (event.key === '/') { event.preventDefault(); search.focus(); }
   });
 </script>
 </body>
 </html>
 `
 }
-
-
 export const MIME_TYPES: Record<OutputFormat, string> = {
   txt: 'text/plain;charset=utf-8',
   srt: 'application/x-subrip;charset=utf-8',

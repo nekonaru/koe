@@ -78,6 +78,7 @@
 | **Copy and download** | One click to clipboard, or save the chosen format per file |
 | **ZIP export** | Download every finished transcript in one archive, including each standalone viewer page |
 | **Read-only share link** | A compressed transcript carried in a URL, with no upload or account |
+| **Viewer 2.0** | Standalone HTML with karaoke words, search, speed, chapters, themes and print |
 | **Waveform with seek** | Canvas waveform with progress fill; click anywhere to jump the player |
 | **Playback sync** | Listen to the audio with the current segment highlighted; click any timestamp to jump |
 | **Standalone viewer export** | Self-contained HTML page with the transcript and the embedded audio; open it offline anywhere |
@@ -97,7 +98,7 @@
 | **Base model** | Bundled with koe, balanced speed and accuracy |
 | **Small model** | Most accurate of the three, about 254 MB, downloaded on demand, needs more memory |
 | **Quantized weights** | Whisper ONNX models quantized for browser use |
-| **Model manager** | See which models are cached, total browser storage used, and delete models you no longer need |
+| **Model manager** | See cached models, download estimates, offline readiness and model recommendations, and delete models you no longer need |
 | **Offline out of the box** | Tiny and Base work immediately, even offline, after the first page load |
 
 ### Interface
@@ -109,6 +110,8 @@
 | **Installable PWA** | Add koe to your home screen or app launcher |
 | **Command palette** | Press Ctrl K to jump to any action |
 | **Undo and redo** | Revert transcript edits, timestamp shifts and cleanup |
+| **Segment trimming** | Edit segment start and end times in focus mode |
+| **Print transcript** | A clean print layout from the result header |
 | **Mobile navigation** | Compact navigation and touch friendly controls |
 
 ### Privacy
