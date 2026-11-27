@@ -6,7 +6,9 @@
                             "transcribe":  "Transcribe",
                             "about":  "About",
                             "help":  "Help"
-                        }
+                        },
+                "navHome":  "Home",
+                "navProjects":  "Projects"
             },
     "hero":  {
                  "badge":  "Processed on this device - nothing is uploaded",
@@ -86,7 +88,11 @@
                    "cached":  "Downloaded",
                    "notCached":  "Not downloaded",
                    "refresh":  "Refresh",
-                   "included":  "Included in this app"
+                   "included":  "Included in this app",
+                   "recommend":  "Recommended for this device",
+                   "offlineReady":  "Ready offline",
+                   "notOffline":  "Not cached",
+                   "integrity":  "Integrity check"
                },
     "errors":  {
                    "decodeFailed":  "This file could not be decoded. It may be damaged or in a format this browser does not support.",
@@ -131,7 +137,10 @@
                  "recoverFailedTitle":  "The model fails to load",
                  "recoverFailedBody":  "Click the Coba lagi button next to the error. If it keeps failing, clear site data (browser DevTools, Application, Storage, Clear site data), then reload the page. If Base still fails, try Tiny. If the Small model fails to download, check your connection and try again; partial downloads resume from the browser cache.",
                  "shortcutsTitle":  "Keyboard shortcuts",
-                 "shortcutsBody":  "Space toggles playback. / focuses the search box. Copy file from another app and press Ctrl+V anywhere on the page to add it to the queue."
+                 "shortcutsBody":  "Space toggles playback. / focuses the search box. Copy file from another app and press Ctrl+V anywhere on the page to add it to the queue.",
+                 "projectsTitle":  "Projects and offline work",
+                 "shortcutsBody2":  "Ctrl K opens the command palette. Space toggles playback. / focuses the search box. Ctrl Z undoes an edit.",
+                 "projectsBody":  "Finished transcripts are saved in IndexedDB on this device. Audio is only kept when you turn on Keep audio for a project. Clearing site data removes projects and models."
              },
     "footer":  {
                    "openSource":  "Open source under MIT",
@@ -139,12 +148,27 @@
                    "nothingUploads":  "Nothing is uploaded"
                },
     "common":  {
-                   "loading":  "Loading",
                    "themeLight":  "Switch to light theme",
                    "themeDark":  "Switch to dark theme",
                    "language":  "Language",
                    "themeSystem":  "Follow system theme",
-                   "install":  "Install koe"
+                   "install":  "Install koe",
+                   "cmdLanguage":  "Switch language",
+                   "cmdNew":  "New transcription",
+                   "noResults":  "No matching commands",
+                   "palettePlaceholder":  "Type a command",
+                   "cmdSearch":  "Focus transcript search",
+                   "cmdTheme":  "Toggle theme",
+                   "cmdDownload":  "Download first transcript",
+                   "commandPalette":  "Command palette",
+                   "cmdCopy":  "Copy first transcript",
+                   "skipToContent":  "Skip to content",
+                   "open":  "Open",
+                   "close":  "Close",
+                   "cancel":  "Cancel",
+                   "save":  "Save",
+                   "delete":  "Delete",
+                   "loading":  "Loading"
                },
     "guide":  {
                   "title":  "How koe works",
@@ -208,5 +232,119 @@
                     "shiftBack":  "Shift timestamps earlier by 1 second",
                     "shiftForward":  "Shift timestamps later by 1 second",
                     "karaokeHint":  "Karaoke mode, word-by-word follow the audio"
-                }
+                },
+    "workspace":  {
+                      "saved":  "Saved",
+                      "speaker":  "Speaker {number}",
+                      "redo":  "Redo",
+                      "backToNew":  "New transcription",
+                      "saving":  "Saving",
+                      "undo":  "Undo",
+                      "openProject":  "Open project",
+                      "rename":  "Project name",
+                      "autosave":  "Changes are saved automatically on this device."
+                  },
+    "projects":  {
+                     "emptyBody":  "Finish a transcription and it appears here automatically.",
+                     "favorite":  "Add to favorites",
+                     "rename":  "Rename",
+                     "notesPlaceholder":  "Add a note about this recording",
+                     "confirmDelete":  "Delete this project from this device?",
+                     "saveAudio":  "Keep audio for offline playback",
+                     "delete":  "Delete",
+                     "noStorage":  "Storage information unavailable",
+                     "notes":  "Notes",
+                     "unfavorite":  "Remove from favorites",
+                     "title":  "Projects",
+                     "subtitle":  "Every finished transcript, saved on this device.",
+                     "noAudio":  "Audio not kept",
+                     "favorites":  "Favorites",
+                     "empty":  "Nothing saved yet",
+                     "updated":  "Updated {date}",
+                     "close":  "Close",
+                     "audioSaved":  "Audio saved",
+                     "search":  "Search projects",
+                     "storage":  "Storage used",
+                     "all":  "All projects",
+                     "open":  "Open"
+                 },
+    "exports":  {
+                    "includeMetadata":  "Include settings and version metadata",
+                    "presetMarkdown":  "Markdown with chapters",
+                    "includeViewer":  "Include standalone viewer pages",
+                    "bulk":  "Download all finished files",
+                    "title":  "Export options",
+                    "template":  "File name template",
+                    "chapters":  "Chapters",
+                    "downloadAll":  "Download bundle",
+                    "formats":  "Formats in bundle",
+                    "presetPlain":  "Plain transcript",
+                    "presets":  "Preset",
+                    "presetCaptions":  "Short caption lines",
+                    "presetClean":  "Clean paragraphs"
+                },
+    "home":  {
+                 "resume":  "Continue where you left off",
+                 "emptyBody":  "Drop a file in Transcribe to create your first project. It is saved here automatically.",
+                 "new":  "New transcription",
+                 "subtitle":  "Transcribe audio and video in your browser. Nothing is uploaded, and your work stays on this device.",
+                 "tipTitle":  "Private by design",
+                 "recent":  "Recent projects",
+                 "count":  "{count} projects",
+                 "tipDismiss":  "Got it",
+                 "open":  "Open",
+                 "title":  "Your audio, your transcript",
+                 "tipBody":  "Files never leave your device. Tiny and Base work offline after the first load.",
+                 "empty":  "No projects yet"
+             },
+    "device":  {
+                   "unknown":  "Unknown",
+                   "recommendation":  "Suggested model",
+                   "saveData":  "Data saver is on, downloads are kept to a minimum",
+                   "backend":  "Backend",
+                   "webgpu":  "WebGPU available",
+                   "threads":  "Threads",
+                   "memory":  "Memory",
+                   "title":  "This device",
+                   "wasm":  "WASM fallback"
+               },
+    "share":  {
+                  "sharedTitle":  "Shared transcript",
+                  "tooLarge":  "This transcript is too large for a link. Export a file instead.",
+                  "copy":  "Copy link",
+                  "button":  "Create share link",
+                  "invalid":  "This link is invalid or incomplete.",
+                  "open":  "Open shared view",
+                  "copied":  "Link copied",
+                  "title":  "Share a read-only view",
+                  "readOnly":  "Read only view, no file is uploaded"
+              },
+    "editor":  {
+                   "matches":  "{count} matches",
+                   "speakerAdd":  "Assign next speaker",
+                   "exitFocus":  "Exit focus mode",
+                   "clipPlay":  "Play clip",
+                   "split":  "Split at playhead",
+                   "repeatsHint":  "Remove repeated filler before exporting.",
+                   "chapters":  "Build chapters",
+                   "replace":  "Replace",
+                   "removeRepeats":  "Remove repeats",
+                   "clipNone":  "Set both points on the waveform first",
+                   "title":  "Editor tools",
+                   "clipEnd":  "Set clip end",
+                   "clipStart":  "Set clip start",
+                   "cleanup":  "Clean up text",
+                   "find":  "Find",
+                   "clipSaved":  "Clip saved",
+                   "speakers":  "Speakers",
+                   "caseSensitive":  "Case sensitive",
+                   "chapterGap":  "New chapter after a pause longer than {seconds} seconds",
+                   "merge":  "Merge with previous",
+                   "replaceAll":  "Replace all",
+                   "focusMode":  "Focus mode",
+                   "repeats":  "Possible repeated speech detected",
+                   "cleanupHint":  "Capitalize sentences and remove repeated words.",
+                   "regex":  "Regular expression",
+                   "clipExport":  "Export WAV clip"
+               }
 }

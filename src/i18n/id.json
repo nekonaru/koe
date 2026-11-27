@@ -6,7 +6,9 @@
                             "transcribe":  "Transkripsi",
                             "about":  "Tentang",
                             "help":  "Bantuan"
-                        }
+                        },
+                "navHome":  "Beranda",
+                "navProjects":  "Proyek"
             },
     "hero":  {
                  "badge":  "Diproses di perangkat ini - tidak ada yang diunggah",
@@ -86,7 +88,11 @@
                    "cached":  "Terunduh",
                    "notCached":  "Belum diunduh",
                    "refresh":  "Perbarui",
-                   "included":  "Sudah termasuk di aplikasi ini"
+                   "included":  "Sudah termasuk di aplikasi ini",
+                   "recommend":  "Disarankan untuk perangkat ini",
+                   "offlineReady":  "Siap offline",
+                   "notOffline":  "Belum tersimpan",
+                   "integrity":  "Pemeriksaan integritas"
                },
     "errors":  {
                    "decodeFailed":  "File ini tidak bisa didekode. Mungkin rusak atau formatnya tidak didukung browser ini.",
@@ -131,7 +137,10 @@
                  "recoverFailedTitle":  "Model gagal dimuat",
                  "recoverFailedBody":  "Klik tombol Coba lagi di sebelah pesan error. Jika masih gagal, bersihkan data situs (DevTools browser, Application, Storage, Clear site data), lalu muat ulang halaman. Jika Base masih gagal, coba Tiny. Jika model Small gagal diunduh, periksa koneksi dan coba lagi; unduhan akan dilanjutkan dari cache browser.",
                  "shortcutsTitle":  "Pintasan keyboard",
-                 "shortcutsBody":  "Space mengaktifkan atau menghentikan pemutaran untuk item pertama yang bisa diputar. / memfokuskan kotak pencarian. Salin file dari aplikasi lain lalu tekan Ctrl+V di mana pun di halaman untuk menambahkannya ke antrean."
+                 "shortcutsBody":  "Space mengaktifkan atau menghentikan pemutaran untuk item pertama yang bisa diputar. / memfokuskan kotak pencarian. Salin file dari aplikasi lain lalu tekan Ctrl+V di mana pun di halaman untuk menambahkannya ke antrean.",
+                 "projectsTitle":  "Proyek dan kerja offline",
+                 "shortcutsBody2":  "Ctrl K membuka palette perintah. Space mengaktifkan atau menghentikan pemutaran. / memfokuskan pencarian. Ctrl Z mengurungkan edit.",
+                 "projectsBody":  "Transkrip selesai tersimpan di IndexedDB pada perangkat ini. Audio hanya disimpan saat kamu mengaktifkan Simpan audio pada proyek. Menghapus data situs menghapus proyek dan model."
              },
     "footer":  {
                    "openSource":  "Open source di bawah MIT",
@@ -139,12 +148,27 @@
                    "nothingUploads":  "Tidak ada yang diunggah"
                },
     "common":  {
-                   "loading":  "Memuat",
                    "themeLight":  "Ganti ke tema terang",
                    "themeDark":  "Ganti ke tema gelap",
                    "language":  "Bahasa",
                    "themeSystem":  "Ikuti tema sistem",
-                   "install":  "Pasang koe"
+                   "install":  "Pasang koe",
+                   "cmdLanguage":  "Ganti bahasa",
+                   "cmdNew":  "Transkripsi baru",
+                   "noResults":  "Tidak ada perintah cocok",
+                   "palettePlaceholder":  "Ketik perintah",
+                   "cmdSearch":  "Fokus pencarian transkrip",
+                   "cmdTheme":  "Ganti tema",
+                   "cmdDownload":  "Unduh transkrip pertama",
+                   "commandPalette":  "Palette perintah",
+                   "cmdCopy":  "Salin transkrip pertama",
+                   "skipToContent":  "Lewati ke konten",
+                   "open":  "Buka",
+                   "close":  "Tutup",
+                   "cancel":  "Batal",
+                   "save":  "Simpan",
+                   "delete":  "Hapus",
+                   "loading":  "Memuat"
                },
     "guide":  {
                   "title":  "Cara kerja koe",
@@ -208,5 +232,119 @@
                     "shiftBack":  "Mundurkan timestamp 1 detik",
                     "shiftForward":  "Majukan timestamp 1 detik",
                     "karaokeHint":  "Mode karaoke, kata demi kata mengikuti audio"
-                }
+                },
+    "workspace":  {
+                      "saved":  "Tersimpan",
+                      "speaker":  "Pembicara {number}",
+                      "redo":  "Ulangi",
+                      "backToNew":  "Transkripsi baru",
+                      "saving":  "Menyimpan",
+                      "undo":  "Urungkan",
+                      "openProject":  "Buka proyek",
+                      "rename":  "Nama proyek",
+                      "autosave":  "Perubahan tersimpan otomatis di perangkat ini."
+                  },
+    "projects":  {
+                     "emptyBody":  "Selesaikan satu transkripsi dan proyeknya muncul di sini otomatis.",
+                     "favorite":  "Tambahkan ke favorit",
+                     "rename":  "Ganti nama",
+                     "notesPlaceholder":  "Tulis catatan tentang rekaman ini",
+                     "confirmDelete":  "Hapus proyek ini dari perangkat?",
+                     "saveAudio":  "Simpan audio untuk pemutaran offline",
+                     "delete":  "Hapus",
+                     "noStorage":  "Informasi penyimpanan tidak tersedia",
+                     "notes":  "Catatan",
+                     "unfavorite":  "Hapus dari favorit",
+                     "title":  "Proyek",
+                     "subtitle":  "Semua transkrip selesai, tersimpan di perangkat ini.",
+                     "noAudio":  "Audio tidak disimpan",
+                     "favorites":  "Favorit",
+                     "empty":  "Belum tersimpan",
+                     "updated":  "Diperbarui {date}",
+                     "close":  "Tutup",
+                     "audioSaved":  "Audio tersimpan",
+                     "search":  "Cari proyek",
+                     "storage":  "Penyimpanan terpakai",
+                     "all":  "Semua proyek",
+                     "open":  "Buka"
+                 },
+    "exports":  {
+                    "includeMetadata":  "Sertakan pengaturan dan metadata versi",
+                    "presetMarkdown":  "Markdown dengan bab",
+                    "includeViewer":  "Sertakan halaman viewer mandiri",
+                    "bulk":  "Unduh semua file selesai",
+                    "title":  "Opsi ekspor",
+                    "template":  "Template nama file",
+                    "chapters":  "Bab",
+                    "downloadAll":  "Unduh arsip",
+                    "formats":  "Format dalam arsip",
+                    "presetPlain":  "Transkrip polos",
+                    "presets":  "Preset",
+                    "presetCaptions":  "Baris caption pendek",
+                    "presetClean":  "Paragraf bersih"
+                },
+    "home":  {
+                 "resume":  "Lanjutkan terakhir",
+                 "emptyBody":  "Lepas file di menu Transcribe untuk membuat proyek pertama. Proyek tersimpan otomatis di sini.",
+                 "new":  "Transkripsi baru",
+                 "subtitle":  "Transkrip audio dan video di browser. Tidak ada yang diunggah, dan pekerjaan kamu tetap di perangkat ini.",
+                 "tipTitle":  "Privasi sejak awal",
+                 "recent":  "Proyek terbaru",
+                 "count":  "{count} proyek",
+                 "tipDismiss":  "Mengerti",
+                 "open":  "Buka",
+                 "title":  "Audio kamu, transkrip kamu",
+                 "tipBody":  "File tidak pernah meninggalkan perangkat. Tiny dan Base jalan offline setelah muat pertama.",
+                 "empty":  "Belum ada proyek"
+             },
+    "device":  {
+                   "unknown":  "Tidak diketahui",
+                   "recommendation":  "Model yang disarankan",
+                   "saveData":  "Hemat data aktif, unduhan diminimalisir",
+                   "backend":  "Backend",
+                   "webgpu":  "WebGPU tersedia",
+                   "threads":  "Thread",
+                   "memory":  "Memori",
+                   "title":  "Perangkat ini",
+                   "wasm":  "Fallback WASM"
+               },
+    "share":  {
+                  "sharedTitle":  "Transkrip bersama",
+                  "tooLarge":  "Transkrip ini terlalu besar untuk tautan. Ekspor file saja.",
+                  "copy":  "Salin tautan",
+                  "button":  "Buat tautan berbagi",
+                  "invalid":  "Tautan ini tidak valid atau tidak lengkap.",
+                  "open":  "Buka tampilan bersama",
+                  "copied":  "Tautan tersalin",
+                  "title":  "Bagikan tampilan hanya-baca",
+                  "readOnly":  "Tampilan hanya-baca, tidak ada file yang diunggah"
+              },
+    "editor":  {
+                   "matches":  "{count} kecocokan",
+                   "speakerAdd":  "Tetapkan pembicara berikutnya",
+                   "exitFocus":  "Keluar mode fokus",
+                   "clipPlay":  "Putar klip",
+                   "split":  "Pisah di playhead",
+                   "repeatsHint":  "Hapus isian berulang sebelum ekspor.",
+                   "chapters":  "Buat bab",
+                   "replace":  "Ganti",
+                   "removeRepeats":  "Hapus pengulangan",
+                   "clipNone":  "Tetapkan dua titik di waveform dulu",
+                   "title":  "Alat edit",
+                   "clipEnd":  "Tetapkan akhir klip",
+                   "clipStart":  "Tetapkan awal klip",
+                   "cleanup":  "Bersihkan teks",
+                   "find":  "Cari",
+                   "clipSaved":  "Klip tersimpan",
+                   "speakers":  "Pembicara",
+                   "caseSensitive":  "Bedakan huruf besar",
+                   "chapterGap":  "Bab baru setelah jeda lebih dari {seconds} detik",
+                   "merge":  "Gabung dengan segmen sebelumnya",
+                   "replaceAll":  "Ganti semua",
+                   "focusMode":  "Mode fokus",
+                   "repeats":  "Kemungkinan pengulangan terdeteksi",
+                   "cleanupHint":  "Kapitalisasi kalimat dan hapus kata berulang.",
+                   "regex":  "Ekspresi reguler",
+                   "clipExport":  "Ekspor klip WAV"
+               }
 }
